@@ -106,6 +106,8 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
+        GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+
         // Centraliza o modelo subtraindo seu centro geométrico
         var world = Matrix.CreateTranslation(-_modelCenter) *
                     Matrix.CreateRotationX(_rotationX) *
@@ -126,14 +128,10 @@ public class Game1 : Game
         {
             foreach (BasicEffect effect in mesh.Effects)
             {
-                effect.EnableDefaultLighting();
                 effect.World = mesh.ParentBone.Transform * world;
                 effect.View = view;
                 effect.Projection = projection;
-
-                effect.TextureEnabled = true;
             }
-
             mesh.Draw();
         }
 
