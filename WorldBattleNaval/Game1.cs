@@ -8,25 +8,14 @@ namespace WorldBattleNaval;
 public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    private SpriteBatch _spriteBatch = null!;
 
-    private Model _model = null!;
+    private Board _board = null!;
+    private Submarine _submarine = null!;
+    private Camera _camera = null!;
+    private InputHandler _input = null!;
 
-    // Centro e raio calculados do bounding sphere do modelo
-    private Vector3 _modelCenter;
-    private float _modelRadius;
-
-    // Rotação acumulada do modelo
-    private float _rotationY = MathHelper.ToRadians(180f);
-    private float _rotationX = 0f;
-
-    // Câmera orbital
-    private float _cameraDistance;
-    private float _minDistance;
-    private float _maxDistance;
-
-    // Estado anterior do mouse
-    private MouseState _prevMouse;
+    private ButtonState _prevLeftButton;
 
     public Game1()
     {
@@ -39,100 +28,142 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        _prevMouse = Mouse.GetState();
+        _input = new InputHandler();
+        _camera = new Camera();
+        _camera.Initialize(Mouse.GetState());
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        _model = Content.Load<Model>("models/Submarino");
 
-        // Calcula o bounding sphere combinando todos os meshes (com transform do bone)
-        var bounds = new BoundingSphere();
-        foreach (var mesh in _model.Meshes)
-        {
-            var meshBounds = mesh.BoundingSphere.Transform(mesh.ParentBone.Transform);
-            bounds = BoundingSphere.CreateMerged(bounds, meshBounds);
-        }
-
-        _modelCenter = bounds.Center;
-        _modelRadius = bounds.Radius;
-
-        // Distância inicial para caber o modelo inteiro na tela com 20% de margem
-        float fovY = MathHelper.ToRadians(45f);
-        float aspect = GraphicsDevice.Viewport.AspectRatio;
-        float fovX = 2f * MathF.Atan(MathF.Tan(fovY / 2f) * aspect);
-        float effectiveFov = MathF.Min(fovY, fovX);
-        _cameraDistance = _modelRadius / MathF.Tan(effectiveFov / 2f) * 1.2f;
-
-        _minDistance = _modelRadius * 0.5f;
-        _maxDistance = _modelRadius * 10f;
+        var model = Content.Load<Model>("models/Submarino");
+        _board = new Board(GraphicsDevice);
+        _submarine = new Submarine(model);
     }
 
     protected override void Update(GameTime gameTime)
     {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-            Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
-
+        _input.Update();
         var mouse = Mouse.GetState();
 
-        // Botão esquerdo: arrastar para rotacionar o modelo
-        if (mouse.LeftButton == ButtonState.Pressed && _prevMouse.LeftButton == ButtonState.Pressed)
-        {
-            int dx = mouse.X - _prevMouse.X;
-            int dy = mouse.Y - _prevMouse.Y;
+        if (_input.IsDown(Keys.Escape) ||
+            GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            Exit();
 
-            _rotationY += dx * 0.01f;
-            _rotationX += dy * 0.01f;
-            _rotationX = MathHelper.Clamp(_rotationX, MathHelper.ToRadians(-80f), MathHelper.ToRadians(80f));
-        }
+        _camera.Update(mouse, GraphicsDevice.Viewport.AspectRatio);
+        _board.Update(gameTime);
+        _submarine.Update(gameTime);
 
-        // Scroll do mouse: zoom in/out proporcional ao tamanho do modelo
-        int scrollDelta = mouse.ScrollWheelValue - _prevMouse.ScrollWheelValue;
-        if (scrollDelta != 0)
-        {
-            _cameraDistance -= scrollDelta * _modelRadius * 0.0002f;
-            _cameraDistance = MathHelper.Clamp(_cameraDistance, _minDistance, _maxDistance);
-        }
+        if (!_submarine.IsPlaced)
+            HandlePlacement(mouse);
+        else
+            HandlePostPlacement();
 
-        _prevMouse = mouse;
+        _prevLeftButton = mouse.LeftButton;
         base.Update(gameTime);
+    }
+
+    private void HandlePlacement(MouseState mouse)
+    {
+        // Mover cursor via mouse (ray cast contra o plano Y=0)
+        if (TryGetBoardCell(mouse, out int row, out int col))
+            _board.SetCursor(row, col);
+
+        // Mover cursor com setas (alternativo ao mouse)
+        if (_input.IsPressed(Keys.Up))    _board.MoveCursor(-1,  0);
+        if (_input.IsPressed(Keys.Down))  _board.MoveCursor( 1,  0);
+        if (_input.IsPressed(Keys.Left))  _board.MoveCursor( 0, -1);
+        if (_input.IsPressed(Keys.Right)) _board.MoveCursor( 0,  1);
+
+        // Rotacionar com R ou botão direito do mouse
+        if (_input.IsPressed(Keys.R)) _submarine.Rotate();
+
+        // Confirmar com clique esquerdo ou Enter/Espaço
+        bool leftClicked = mouse.LeftButton == ButtonState.Pressed &&
+                           _prevLeftButton  == ButtonState.Released;
+
+        if (leftClicked || _input.IsPressed(Keys.Enter) || _input.IsPressed(Keys.Space))
+        {
+            var (r, c) = _board.CursorPosition;
+            if (_board.CanPlace(r, c, _submarine.Size, _submarine.IsHorizontal))
+            {
+                _board.Place(r, c, _submarine.Size, _submarine.IsHorizontal);
+                _submarine.Place(r, c);
+            }
+        }
+    }
+
+    private void HandlePostPlacement()
+    {
+        // Desfazer posicionamento com Delete ou Backspace
+        if (_input.IsPressed(Keys.Delete) || _input.IsPressed(Keys.Back))
+        {
+            _board.Clear(_submarine.PlacedRow, _submarine.PlacedCol,
+                         _submarine.Size, _submarine.PlacedHorizontal);
+            _submarine.Reset();
+        }
+    }
+
+    /// <summary>
+    /// Lança um raio do mouse e retorna a célula do tabuleiro sob o cursor,
+    /// intersectando com o plano horizontal Y = 0.
+    /// </summary>
+    private bool TryGetBoardCell(MouseState mouse, out int row, out int col)
+    {
+        row = col = 0;
+
+        var viewport = GraphicsDevice.Viewport;
+        var mousePos = new Vector3(mouse.X, mouse.Y, 0f);
+
+        var near = viewport.Unproject(mousePos with { Z = 0f },
+            _camera.Projection, _camera.View, Matrix.Identity);
+        var far  = viewport.Unproject(mousePos with { Z = 1f },
+            _camera.Projection, _camera.View, Matrix.Identity);
+
+        var dir = Vector3.Normalize(far - near);
+
+        // Intersecção com Y = 0: near.Y + t * dir.Y = 0
+        if (MathF.Abs(dir.Y) < 1e-6f) return false;
+
+        float t = -near.Y / dir.Y;
+        if (t < 0f) return false;
+
+        var hit = near + t * dir;
+
+        float half = Board.Size * Board.CellSize / 2f;
+        int c = (int)MathF.Floor((hit.X + half) / Board.CellSize);
+        int r = (int)MathF.Floor((hit.Z + half) / Board.CellSize);
+
+        if (r < 0 || r >= Board.Size || c < 0 || c >= Board.Size) return false;
+
+        row = r;
+        col = c;
+        return true;
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-        GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+        GraphicsDevice.Clear(new Color(8, 20, 50));
 
-        GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+        var view = _camera.View;
+        var projection = _camera.Projection;
 
-        // Centraliza o modelo subtraindo seu centro geométrico
-        var world = Matrix.CreateTranslation(-_modelCenter) *
-                    Matrix.CreateRotationX(_rotationX) *
-                    Matrix.CreateRotationY(_rotationY);
+        // 1. Tabuleiro (água + grade)
+        _board.Draw(GraphicsDevice, _submarine, view, projection);
 
-        var view = Matrix.CreateLookAt(
-            new Vector3(0, _cameraDistance * 0.3f, _cameraDistance),
-            Vector3.Zero,
-            Vector3.Up);
-
-        var projection = Matrix.CreatePerspectiveFieldOfView(
-            MathHelper.ToRadians(45f),
-            GraphicsDevice.Viewport.AspectRatio,
-            _modelRadius * 0.01f,
-            _modelRadius * 100f);
-
-        foreach (var mesh in _model.Meshes)
+        // 2. Submarino
+        if (_submarine.IsPlaced)
         {
-            foreach (BasicEffect effect in mesh.Effects)
-            {
-                effect.World = mesh.ParentBone.Transform * world;
-                effect.View = view;
-                effect.Projection = projection;
-            }
-            mesh.Draw();
+            _submarine.Draw(GraphicsDevice, _submarine.PlacedRow, _submarine.PlacedCol,
+                            view, projection, alpha: 1f);
+        }
+        else
+        {
+            var (row, col) = _board.CursorPosition;
+            bool canPlace = _board.CanPlace(row, col, _submarine.Size, _submarine.IsHorizontal);
+            _submarine.Draw(GraphicsDevice, row, col, view, projection, alpha: canPlace ? 0.75f : 0.4f);
         }
 
         base.Draw(gameTime);
