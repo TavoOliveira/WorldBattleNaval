@@ -13,6 +13,10 @@ public class Ship
     private readonly float modelRadius;
 
     public bool IsHorizontal { get; private set; } = true;
+    public bool IsPlaced { get; private set; }
+    public int PlacedRow { get; private set; }
+    public int PlacedCol { get; private set; }
+    public bool PlacedHorizontal { get; private set; }
 
     public Ship(Model model, int size)
     {
@@ -30,8 +34,6 @@ public class Ship
         modelCenter = bounds.Center;
         modelRadius = bounds.Radius;
     }
-
-    public void Rotate() => IsHorizontal = !IsHorizontal;
 
     public void Draw(GraphicsDevice graphicsDevice, int row, int col, Matrix view, Matrix projection)
     {
@@ -77,5 +79,15 @@ public class Ship
 
             mesh.Draw();
         }
+    }
+
+    public void Rotate() => IsHorizontal = !IsHorizontal;
+
+    public void Place(int row, int col)
+    {
+        IsPlaced = true;
+        PlacedRow = row;
+        PlacedCol = col;
+        PlacedHorizontal = IsHorizontal;
     }
 }

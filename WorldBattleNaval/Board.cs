@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,6 +15,8 @@ public class Board
     private int cursorCol;
 
     private VertexPositionColor[] gridLines;
+
+    public (int row, int col) CursorPosition => (cursorRow, cursorCol);
 
     public Board()
     {
@@ -43,6 +46,20 @@ public class Board
         DrawGridLines(graphicsDevice, effect);
 
         graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+    }
+
+    public void MoveCursor(int row, int col)
+    {
+        cursorRow = Math.Clamp(cursorRow + row, 0, Size - 1);
+        cursorCol = Math.Clamp(cursorCol + col, 0, Size - 1);
+    }
+
+    public void SetCursor(int row, int col)
+    {
+        cursorRow = Math.Clamp(row, 0, Size - 1);
+        cursorCol = Math.Clamp(col, 0, Size - 1);
+
+        Console.WriteLine($"Row: {row}, Col: {col}");
     }
 
     private void BuildGridLines()

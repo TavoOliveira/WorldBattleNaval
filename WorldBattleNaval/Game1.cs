@@ -8,7 +8,6 @@ namespace WorldBattleNaval;
 public class Game1 : Game
 {
     private GraphicsDeviceManager graphics;
-    private SpriteBatch spriteBatch;
 
     private SceneManager sceneManager;
 
