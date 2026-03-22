@@ -9,8 +9,8 @@ public class Camera
     public Matrix Projection { get; private set; }
 
     private float distance = 25f;
-    private float rotateX = MathHelper.ToRadians(89f);
-    private float rotateY = MathHelper.ToRadians(0f);
+    private float rotateX = MathHelper.ToRadians(55f);
+    private float rotateY = MathHelper.ToRadians(55f);
 
     public Camera()
     {

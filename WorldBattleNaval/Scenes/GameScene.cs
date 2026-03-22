@@ -30,7 +30,7 @@ public class GameScene : IScene
 
     public void LoadContent(ContentManager content)
     {
-        var model = content.Load<Model>("models/Submarino");
+        var model = content.Load<Model>("models/Submarine");
 
         camera = new Camera();
         board = new Board();
