@@ -29,7 +29,7 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
-        sceneManager.ChangeScene(new GameScene(GraphicsDevice, sceneManager));
+        sceneManager.ChangeScene(new MainMenuScene(GraphicsDevice, sceneManager));
     }
 
     protected override void Update(GameTime gameTime)
