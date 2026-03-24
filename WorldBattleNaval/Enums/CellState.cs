@@ -3,5 +3,7 @@ namespace WorldBattleNaval.Enums;
 public enum CellState
 {
     EMPTY,
-    OCCUPIED
+    OCCUPIED,
+    HIT,
+    MISS
 }

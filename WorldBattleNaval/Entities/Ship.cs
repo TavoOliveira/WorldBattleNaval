@@ -7,6 +7,9 @@ namespace WorldBattleNaval.Entities;
 public class Ship
 {
     public int Size { get; private set; }
+    public int Life { get; }
+
+    public bool IsSunk => Life <= 0;
 
     private readonly Model model;
     private readonly Vector3 modelCenter;
@@ -22,6 +25,7 @@ public class Ship
     {
         this.model = model;
         Size = size;
+        Life = size;
 
         var bounds = new BoundingSphere();
 
