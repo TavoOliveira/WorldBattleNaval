@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using WorldBattleNaval.Entities;
+using WorldBattleNaval.Enums;
 
 namespace WorldBattleNaval;
 
@@ -60,6 +62,71 @@ public class Board
         cursorCol = Math.Clamp(col, 0, Size - 1);
 
         Console.WriteLine($"Row: {row}, Col: {col}");
+    }
+    
+    public bool CanPlace(int row, int col, int shipSize, bool horizontal)
+    {
+        for (int i = 0; i < shipSize; i++)
+        {
+            int r = horizontal ? row : row + i;
+            int c = horizontal ? col + i : col;
+            if (r < 0 || r >= Size || c < 0 || c >= Size) return false;
+            if (cells[r, c].State == CellState.OCCUPIED) return false;
+        }
+        return true;
+    }
+
+    public void Place(int row, int col, int shipSize, bool horizontal)
+    {
+        for (int i = 0; i < shipSize; i++)
+        {
+            int r = horizontal ? row : row + i;
+            int c = horizontal ? col + i : col;
+            cells[r, c].State = CellState.OCCUPIED;
+        }
+    }
+
+    public void Clear(int row, int col, int shipSize, bool horizontal)
+    {
+        for (int i = 0; i < shipSize; i++)
+        {
+            int r = horizontal ? row : row + i;
+            int c = horizontal ? col + i : col;
+            cells[r, c].State = CellState.EMPTY;
+        }
+    }
+
+    public static Board CreateRandom(IReadOnlyList<Ship> ships, Random? rng = null)
+    {
+        rng ??= Random.Shared;
+        var board = new Board();
+
+        foreach (var ship in ships)
+        {
+            bool placed = false;
+            while (!placed)
+            {
+                bool horizontal = rng.Next(2) == 0;
+
+                if (ship.IsHorizontal != horizontal)
+                    ship.Rotate();
+
+                int maxRow = horizontal ? Size : Size - ship.Size;
+                int maxCol = horizontal ? Size - ship.Size : Size;
+
+                int row = rng.Next(0, maxRow);
+                int col = rng.Next(0, maxCol);
+
+                if (board.CanPlace(row, col, ship.Size, horizontal))
+                {
+                    board.Place(row, col, ship.Size, horizontal);
+                    ship.Place(row, col);
+                    placed = true;
+                }
+            }
+        }
+
+        return board;
     }
 
     private void BuildGridLines()

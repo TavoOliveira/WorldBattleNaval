@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using WorldBattleNaval.Interfaces;
+using WorldBattleNaval.UI;
 
 namespace WorldBattleNaval;
 
@@ -11,9 +13,19 @@ public class SceneManager
     private IScene currentScene;
     private IScene pendingScene;
 
-    public SceneManager(ContentManager content)
+    public SpriteBatch SpriteBatch { get; }
+    public GameState GameState { get; }
+    public ResourceManager Resources { get; }
+    public UIContext UIContext { get; }
+
+    public SceneManager(ContentManager content, SpriteBatch spriteBatch, GameState gameState,
+        ResourceManager resources, UIContext uiContext)
     {
         this.content = content;
+        SpriteBatch = spriteBatch;
+        GameState = gameState;
+        Resources = resources;
+        UIContext = uiContext;
     }
 
     public void ChangeScene(IScene scene)

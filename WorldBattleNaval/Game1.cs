@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using WorldBattleNaval.Scenes;
+using WorldBattleNaval.UI;
 
 namespace WorldBattleNaval;
 
@@ -22,20 +23,24 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        sceneManager = new SceneManager(Content);
-
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
+        var spriteBatch = new SpriteBatch(GraphicsDevice);
+        var resources   = new ResourceManager(Content, GraphicsDevice);
+        var uiContext   = new UIContext(spriteBatch, resources.Pixel, resources.Font);
+        sceneManager = new SceneManager(Content, spriteBatch, new GameState(), resources, uiContext);
         sceneManager.ChangeScene(new MainMenuScene(GraphicsDevice, sceneManager));
     }
 
     protected override void Update(GameTime gameTime)
     {
+        InputManager.Update();
+
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-            Keyboard.GetState().IsKeyDown(Keys.Escape))
+            InputManager.IsKeyDown(Keys.Escape))
             Exit();
 
         sceneManager.Update(gameTime);

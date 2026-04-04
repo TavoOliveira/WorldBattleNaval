@@ -14,7 +14,8 @@ public class Ship
     private readonly Model model;
     private readonly Vector3 modelCenter;
     private readonly float modelRadius;
-
+    
+    public string Name { get; private set; }
     public bool IsHorizontal { get; private set; } = true;
     public bool IsPlaced { get; private set; }
     public int PlacedRow { get; private set; }
@@ -26,6 +27,7 @@ public class Ship
         this.model = model;
         Size = size;
         Life = size;
+        Name = "name";
 
         var bounds = new BoundingSphere();
 
