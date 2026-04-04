@@ -60,8 +60,6 @@ public class Board
     {
         cursorRow = Math.Clamp(row, 0, Size - 1);
         cursorCol = Math.Clamp(col, 0, Size - 1);
-
-        Console.WriteLine($"Row: {row}, Col: {col}");
     }
     
     public bool CanPlace(int row, int col, int shipSize, bool horizontal)

@@ -34,6 +34,7 @@ public class PlacementScene : IScene
     public void LoadContent(ContentManager content)
     {
         var model = sceneManager.Resources.SubmarineModel;
+        var subImage = content.Load<Texture2D>("images/screenshot_submarine");
         uiCtx = sceneManager.UIContext;
         camera = new Camera();
 
@@ -54,16 +55,35 @@ public class PlacementScene : IScene
         ];
         var lateralPanelWidth = 300;
 
-        var stackPanel = new StackPanel(0, 100, 0) { Spacing = 10};
+        var stackPanel = new StackPanel(0, 50, 0) { Spacing = 10 };
 
-        foreach (var _ in Enumerable.Range(1, 3))
+        var shipPanel = new Panel(0, 0, 0, 100)
         {
-            stackPanel.AddChild(new Panel(0, 0, 0, 200) {Background = Color.Red});
-        }
+            Background = UITheme.LightBlue1,
+            BorderColor = UITheme.LightBlue2,
+            Padding = 5
+        };
+
+        var shipStackPanel = new StackPanel(0, 0, 0)
+        {
+            Spacing = 10
+        };
+
+        var widthImageShip = 100;
+
+        var imageShip = new Image(subImage, 100, 0, widthImageShip, 50);
+
+        shipStackPanel.AddChild(new Label("Submarino", 0, 0, shipStackPanel.Width) { Font = sceneManager.Resources.SmallFont });
+        shipStackPanel.AddChild(imageShip);
+
+        shipPanel.AddChild(shipStackPanel);
+
+        stackPanel.AddChild(shipPanel);
 
         lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, 0, lateralPanelWidth, graphicsDevice.Viewport.Height)
         {
-            Padding = 10 
+            Padding = 10,
+            Background = UITheme.LightBlue1
         };
 
         lateralPanel.AddChild(new Label("Suas embarcações", 10, 0, 0));
@@ -106,7 +126,7 @@ public class PlacementScene : IScene
 
     private void HandlePlacement()
     {
-        var player  = sceneManager.GameState.Player;
+        var player = sceneManager.GameState.Player;
         var current = pendingShips[currentShipIndex];
 
         if (TryGetBoardCell(out int row, out int col))
@@ -145,15 +165,15 @@ public class PlacementScene : IScene
         var mousePos = new Vector3(mp.X, mp.Y, 0f);
 
         var near = viewport.Unproject(mousePos with { Z = 0f }, camera.Projection, camera.View, Matrix.Identity);
-        var far  = viewport.Unproject(mousePos with { Z = 1f }, camera.Projection, camera.View, Matrix.Identity);
-        var dir  = Vector3.Normalize(far - near);
+        var far = viewport.Unproject(mousePos with { Z = 1f }, camera.Projection, camera.View, Matrix.Identity);
+        var dir = Vector3.Normalize(far - near);
 
         if (MathF.Abs(dir.Y) < 1e-6f) return false;
 
         float t = -near.Y / dir.Y;
         if (t < 0f) return false;
 
-        var hit  = near + t * dir;
+        var hit = near + t * dir;
         float half = Board.Size * Board.CellSize / 2f;
         int c = (int)MathF.Floor((hit.X + half) / Board.CellSize);
         int r = (int)MathF.Floor((hit.Z + half) / Board.CellSize);
