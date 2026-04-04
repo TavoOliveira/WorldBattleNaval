@@ -20,6 +20,13 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/Font.spritefont
 
+#begin fonts/SmallFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/SmallFont.spritefont
+
 #begin images/bg_button_pressed.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -44,6 +51,18 @@
 /processorParam:TextureFormat=Color
 /build:images/bg_button.png
 
+#begin images/icon_size_ship.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/icon_size_ship.png
+
 #begin images/logo.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -55,6 +74,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:images/logo.png
+
+#begin images/screenshot_submarine.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/screenshot_submarine.png
 
 #begin models/Submarine.fbx
 /importer:FbxImporter
