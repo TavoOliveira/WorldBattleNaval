@@ -5,7 +5,7 @@ namespace WorldBattleNaval.UI;
 public class Panel : UIElementWithChildren
 {
     public int Height { get; set; }
-    public Color Background { get; set; } = Color.Blue;
+    public Color Background { get; set; } = Color.Transparent;
     public Color? BorderColor { get; set; }
     public int BorderThickness { get; set; } = 1;
 

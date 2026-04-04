@@ -14,21 +14,29 @@ public class StackPanel : UIElementWithChildren
     public override int Draw(UIContext ctx)
     {
         var position = 0;
+        var ox = ctx.OffsetX;
+        var oy = ctx.OffsetY;
 
         foreach (var child in children)
         {
             if (IsVertical)
             {
-                child.X = X;
-                child.Y = Y + position;
-                child.Width = Width;
+                child.X = X + ox;
+                child.Y = Y + oy + position;
+                child.Width = child.Width == 0 ? Width : child.Width;
+                
+                ctx.PopOffset(ox, oy);
                 position += child.Draw(ctx) + Spacing;
+                ctx.PushOffset(ox, oy);
             }
             else
             {
-                child.X = X + position;
-                child.Y = Y;
+                child.X = X + ox + position;
+                child.Y = Y + oy;
+                
+                ctx.PopOffset(ox, oy);
                 position += child.Draw(ctx) + Spacing;
+                ctx.PushOffset(ox, oy);
             }
         }
         
