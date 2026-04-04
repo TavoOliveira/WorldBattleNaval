@@ -1,25 +1,15 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace WorldBattleNaval.UI;
 
-public class StackPanel : UIElement
+public class StackPanel : UIElementWithChildren
 {
     public bool IsVertical { get; set; } = true;
     public int Spacing { get; set; } = 4;
 
-    private readonly List<UIElement> children = [];
-
-    public StackPanel(int x, int y, int width) : base(x, y, width)
-    {
-
-    }
-
-    public StackPanel Add(UIElement child)
-    {
-        children.Add(child);
-        return this;
-    }
+    public StackPanel(int x, int y, int width) : base(x, y, width) { }
 
     public override int Draw(UIContext ctx)
     {
@@ -41,7 +31,7 @@ public class StackPanel : UIElement
                 position += child.Draw(ctx) + Spacing;
             }
         }
-
+        
         return position > 0 ? position - Spacing : 0;
     }
 }

@@ -1,49 +1,46 @@
-using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace WorldBattleNaval.UI;
 
 public class Button : UIElement
 {
-    public string Text { get; set; }
-    public int Height { get; set; } = 32;
+    private readonly Label label;
+    private readonly Texture2D texture;
+    private readonly Texture2D? texturePressed;
+
+    public int Height { get; set; } = 50;
 
     public bool IsHovered { get; private set; }
     public bool IsPressed { get; private set; }
     public bool IsClicked { get; private set; }
 
-    private ButtonState previewLeft = ButtonState.Released;
+    public Button(Label label, Texture2D texture, Texture2D? texturePressed, int x, int y, int width) : base(x, y, width)
+    {
+        this.label = label;
+        this.texture = texture;
+        this.texturePressed = texturePressed;
+    }
 
-    private readonly Color BackgroundColor;
-    private readonly Color BackgroundColorHover;
-    private readonly Color BackgroundColorPressed;
-
-
-    public Button(string text, int x, int y, int width) : base(x, y, width)
-        => Text = text;
-
-    public void Update(MouseState mouse)
+    public void Update()
     {
         var bounds = new Rectangle(X, Y, Width, Height);
-        IsHovered = bounds.Contains(mouse.X, mouse.Y);
-        IsPressed = IsHovered && mouse.LeftButton == ButtonState.Pressed;
-        IsClicked = IsHovered && previewLeft == ButtonState.Pressed && mouse.LeftButton == ButtonState.Released;
-
-        previewLeft = mouse.LeftButton;
+        IsHovered = bounds.Contains(InputManager.MousePosition);
+        IsPressed = IsHovered && InputManager.IsLeftDown;
+        IsClicked = IsHovered && InputManager.IsLeftClicked;
     }
 
     public override int Draw(UIContext ctx)
     {
-        var bg = IsPressed ? BackgroundColorPressed : IsHovered ? BackgroundColorHover : BackgroundColor;
-
-        ctx.FillRect(X, Y, Width, Height, bg);
-
-        var size = ctx.Font.MeasureString(Text);
-        var textX = X + (Width - (int)size.X) / 2;
-        var textY = Y + (Height - (int)size.Y) / 2;
-
-        ctx.SpriteBatch.DrawString(ctx.Font, Text, new Vector2(textX, textY), Color.White);
+        if (texturePressed != null && IsPressed)
+            ctx.SpriteBatch.Draw(texturePressed, new Rectangle(X, Y, Width, Height), Color.White);
+        else
+            ctx.SpriteBatch.Draw(texture, new Rectangle(X, Y, Width, Height), Color.White);
+        
+        var textSize = (label.Font ?? ctx.Font).MeasureString(label.Text);
+        label.X = X + (Width  - (int)textSize.X) / 2;
+        label.Y = Y + (Height - (int)textSize.Y) / 2;
+        label.Draw(ctx);
 
         return Height;
     }
