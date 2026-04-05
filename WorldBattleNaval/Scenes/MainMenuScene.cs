@@ -8,13 +8,13 @@ namespace WorldBattleNaval.Scenes;
 
 public class MainMenuScene : IScene
 {
-    private GraphicsDevice graphicsDevice;
-    private SceneManager sceneManager;
+    private readonly GraphicsDevice graphicsDevice;
+    private readonly SceneManager sceneManager;
     private UIContext uiCtx;
 
     private Image logoImg;
-
     private StackPanel menuStack;
+
     private Button pvsCpuBtn;
     private Button pvsPBtn;
     private Button settingsBtn;
@@ -36,32 +36,24 @@ public class MainMenuScene : IScene
         var logoX = graphicsDevice.Viewport.Width / 2 - res.LogoTexture.Width / 2;
         logoImg = new Image(res.LogoTexture, logoX, 100);
 
-        var menuWidth = 250;
+        pvsCpuBtn = CreateMenuButton("Player vs CPU", res);
+        pvsPBtn = CreateMenuButton("Player vs Player", res);
+        settingsBtn = CreateMenuButton("Configurações", res);
+        quitBtn = CreateMenuButton("Sair", res);
+
         var menuX = 100;
         var menuY = graphicsDevice.Viewport.Height - 270;
-        var gold = new Color(220, 160, 20);
 
-        pvsCpuBtn = new Button(new Label("Player vs CPU", 0, 0, 0) { Color = gold }, res.ButtonTexture,
-            res.ButtonPressedTexture, 0, 0, menuWidth);
-        pvsPBtn = new Button(new Label("Player vs Player", 0, 0, 0) { Color = gold }, res.ButtonTexture,
-            res.ButtonPressedTexture, 0, 0, menuWidth);
-        settingsBtn = new Button(new Label("Configurações", 0, 0, 0) { Color = gold }, res.ButtonTexture,
-            res.ButtonPressedTexture, 0, 0, menuWidth);
-        quitBtn = new Button(new Label("Sair", 0, 0, 0) { Color = gold }, res.ButtonTexture, res.ButtonPressedTexture,
-            0, 0, menuWidth);
-
-        menuStack = new StackPanel(menuX, menuY, menuWidth) { Spacing = 10 };
+        menuStack = new StackPanel(menuX, menuY, 0) { Spacing = 10 };
         menuStack.AddChild(pvsCpuBtn);
         menuStack.AddChild(pvsPBtn);
         menuStack.AddChild(settingsBtn);
+        menuStack.AddChild(quitBtn);
 
         IsReady = true;
     }
 
-    public void Unload()
-    {
-        IsReady = false;
-    }
+    public void Unload() => IsReady = false;
 
     public void Update(GameTime gameTime)
     {
@@ -72,11 +64,6 @@ public class MainMenuScene : IScene
 
         if (pvsCpuBtn.IsClicked || pvsPBtn.IsClicked)
             sceneManager.ChangeScene(new PlacementScene(graphicsDevice, sceneManager));
-
-        if (settingsBtn.IsClicked)
-        {
-            // Placeholder para cena de configurações
-        }
     }
 
     public void Draw(GameTime gameTime)
@@ -87,5 +74,19 @@ public class MainMenuScene : IScene
         logoImg.Draw(uiCtx);
         menuStack.Draw(uiCtx);
         sceneManager.SpriteBatch.End();
+    }
+
+    private Button CreateMenuButton(string text, ResourceManager res)
+    {
+        const int buttonWidth  = 250;
+        const int buttonHeight = 50;
+        var gold = new Color(220, 160, 20);
+
+        var textSize = uiCtx.Font.MeasureString(text);
+        var labelX = (int)((buttonWidth  - textSize.X) / 2);
+        var labelY = (int)((buttonHeight - textSize.Y) / 2);
+
+        var label = new Label(text, labelX, labelY, 0) { Color = gold };
+        return new Button(label, res.ButtonTexture, res.ButtonPressedTexture, 0, 0, buttonWidth);
     }
 }

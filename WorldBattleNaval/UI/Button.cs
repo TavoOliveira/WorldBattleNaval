@@ -5,7 +5,7 @@ namespace WorldBattleNaval.UI;
 
 public class Button : UIElement
 {
-    private readonly Label label;
+    private readonly UIElement child;
     private readonly Texture2D texture;
     private readonly Texture2D? texturePressed;
 
@@ -17,9 +17,9 @@ public class Button : UIElement
 
     private Rectangle bounds;
 
-    public Button(Label label, Texture2D texture, Texture2D? texturePressed, int x, int y, int width) : base(x, y, width)
+    public Button(UIElement child, Texture2D texture, Texture2D? texturePressed, int x, int y, int width) : base(x, y, width)
     {
-        this.label = label;
+        this.child = child;
         this.texture = texture;
         this.texturePressed = texturePressed;
     }
@@ -40,10 +40,9 @@ public class Button : UIElement
         else
             ctx.SpriteBatch.Draw(texture, bounds, Color.White);
 
-        var textSize = (label.Font ?? ctx.Font).MeasureString(label.Text);
-        label.X = X + (Width  - (int)textSize.X) / 2;
-        label.Y = Y + (Height - (int)textSize.Y) / 2;
-        label.Draw(ctx);
+        ctx.PushOffset(X, Y);
+        child.Draw(ctx);
+        ctx.PopOffset(X, Y);
 
         return Height;
     }

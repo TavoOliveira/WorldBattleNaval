@@ -9,4 +9,5 @@ public abstract class UIElement(int x, int y, int width)
     public int Width { get; set; } = width;
 
     public abstract int Draw(UIContext ctx);
+    public virtual (int Width, int Height) Measure(UIContext ctx) => (Width, 0);
 }

@@ -12,6 +12,12 @@ public class Label : UIElement
     public Label(string text, int x, int y, int width) : base(x, y, width)
         => Text = text;
 
+    public override (int Width, int Height) Measure(UIContext ctx)
+    {
+        var size = (Font ?? ctx.Font).MeasureString(Text);
+        return ((int)size.X, (int)size.Y);
+    }
+
     public override int Draw(UIContext ctx)
     {
         var font = Font ?? ctx.Font;
