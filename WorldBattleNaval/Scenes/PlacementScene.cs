@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Security.Cryptography;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -21,6 +21,7 @@ public class PlacementScene : IScene
     private List<Ship> cpuShips;
     private int currentShipIndex;
 
+    private Panel headerPanel;
     private Panel lateralPanel;
 
     public bool IsReady { get; private set; }
@@ -33,63 +34,90 @@ public class PlacementScene : IScene
 
     public void LoadContent(ContentManager content)
     {
-        var model = sceneManager.Resources.SubmarineModel;
-        var subImage = content.Load<Texture2D>("images/screenshot_submarine");
         uiCtx = sceneManager.UIContext;
         camera = new Camera();
 
-        pendingShips =
-        [
-            new Ship(model, 3),
-            new Ship(model, 3),
-            new Ship(model, 3),
-            new Ship(model, 3),
+        InitializeShips();
+        InitializeUI(content);
+
+        IsReady = true;
+    }
+
+    private void InitializeShips()
+    {
+        var model = sceneManager.Resources.SubmarineModel;
+
+        pendingShips = [
+            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3),
+            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3)
         ];
 
-        cpuShips =
-        [
-            new Ship(model, 3),
-            new Ship(model, 3),
-            new Ship(model, 3),
-            new Ship(model, 3),
+        cpuShips = [
+            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3),
+            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3)
         ];
-        var lateralPanelWidth = 300;
+    }
 
-        var stackPanel = new StackPanel(0, 50, 0) { Spacing = 10 };
+    private void InitializeUI(ContentManager content)
+    {
+        const int headerPanelHeight = 50;
 
-        var shipPanel = new Panel(0, 0, 0, 100)
+        headerPanel = new Panel(0, 0, graphicsDevice.Viewport.Width, headerPanelHeight)
         {
             Background = UITheme.LightBlue1,
-            BorderColor = UITheme.LightBlue2,
-            Padding = 5
         };
 
-        var shipStackPanel = new StackPanel(0, 0, 0)
-        {
-            Spacing = 10
-        };
+        var text = "Monte seu tabuleiro";
 
-        var widthImageShip = 100;
+        var textSize = uiCtx.Font.MeasureString(text);
+        var labelX = (int)((graphicsDevice.Viewport.Width  - textSize.X) / 2);
+        var labelY = (int)((headerPanelHeight - textSize.Y) / 2);
 
-        var imageShip = new Image(subImage, 100, 0, widthImageShip, 50);
+        headerPanel.AddChild(new Label(text, labelX, labelY, 0));
 
-        shipStackPanel.AddChild(new Label("Submarino", 0, 0, shipStackPanel.Width) { Font = sceneManager.Resources.SmallFont });
-        shipStackPanel.AddChild(imageShip);
+        const int lateralPanelWidth = 300;
 
-        shipPanel.AddChild(shipStackPanel);
+        var shipListStack = new StackPanel(0, 50, 0) { Spacing = 10 };
 
-        stackPanel.AddChild(shipPanel);
+        foreach (var ship in pendingShips)
+            shipListStack.AddChild(CreateShipItem(content, ship.Name, "images/screenshot_submarine"));
 
-        lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, 0, lateralPanelWidth, graphicsDevice.Viewport.Height)
+        lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, headerPanelHeight, lateralPanelWidth, graphicsDevice.Viewport.Height - headerPanelHeight)
         {
             Padding = 10,
             Background = UITheme.LightBlue1
         };
 
         lateralPanel.AddChild(new Label("Suas embarcações", 10, 0, 0));
-        lateralPanel.AddChild(stackPanel);
+        lateralPanel.AddChild(shipListStack);
+    }
 
-        IsReady = true;
+    private UIElement CreateShipItem(ContentManager content, string name, string imagePath)
+    {
+        var subImage = content.Load<Texture2D>(imagePath);
+        var iconSizeShip = content.Load<Texture2D>("images/icon_size_ship");
+
+        var panel = new Panel(0, 0, 0, 70)
+        {
+            Background = UITheme.LightBlue1,
+            BorderColor = UITheme.LightBlue2,
+            Padding = 5
+        };
+
+        var contentStack = new StackPanel(0, 0, 0) { IsVertical = false };
+        var contentLeftStack = new StackPanel(0, 0, 0) { Spacing = 5 };
+        var iconContentStack = new StackPanel(0, 0, 0) { Spacing = 10, IsVertical = false };
+
+        iconContentStack.AddChild(new Image(iconSizeShip, 0, 0, 24));
+        iconContentStack.AddChild(new Label("3 espaços", 0, 0, 0) { Font = sceneManager.Resources.TinyFont });
+
+        contentLeftStack.AddChild(new Label(name, 0, 0, 0) { Font = sceneManager.Resources.SmallFont });
+        contentLeftStack.AddChild(iconContentStack);
+        contentStack.AddChild(contentLeftStack);
+        contentStack.AddChild(new Image(subImage, 50, 5, 100, 50));
+
+        panel.AddChild(contentStack);
+        return panel;
     }
 
     public void Unload() => IsReady = false;
@@ -104,7 +132,6 @@ public class PlacementScene : IScene
     {
         var view = camera.View;
         var projection = camera.Projection;
-
         var player = sceneManager.GameState.Player;
 
         player.Board.Draw(graphicsDevice, view, projection);
@@ -114,12 +141,12 @@ public class PlacementScene : IScene
 
         if (currentShipIndex < pendingShips.Count)
         {
-            var current = pendingShips[currentShipIndex];
             var (row, col) = player.Board.CursorPosition;
-            current.Draw(graphicsDevice, row, col, view, projection);
+            pendingShips[currentShipIndex].Draw(graphicsDevice, row, col, view, projection);
         }
 
         sceneManager.SpriteBatch.Begin();
+        headerPanel.Draw(uiCtx);
         lateralPanel.Draw(uiCtx);
         sceneManager.SpriteBatch.End();
     }
@@ -145,13 +172,6 @@ public class PlacementScene : IScene
                 current.Place(r, c);
                 player.Ships.Add(current);
                 currentShipIndex++;
-
-                // if (currentShipIndex >= pendingShips.Count)
-                // {
-                //     sceneManager.GameState.Cpu.Setup(cpuShips);
-                //     sceneManager.GameState.StartBattle();
-                //     sceneManager.ChangeScene(new GameScene(graphicsDevice, sceneManager));
-                // }
             }
         }
     }
@@ -159,7 +179,6 @@ public class PlacementScene : IScene
     private bool TryGetBoardCell(out int row, out int col)
     {
         row = col = 0;
-
         var viewport = graphicsDevice.Viewport;
         var mp = InputManager.MousePosition;
         var mousePos = new Vector3(mp.X, mp.Y, 0f);
