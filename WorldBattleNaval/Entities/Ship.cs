@@ -22,12 +22,12 @@ public class Ship
     public int PlacedCol { get; private set; }
     public bool PlacedHorizontal { get; private set; }
 
-    public Ship(Model model, int size)
+    public Ship(string name, Model model, int size)
     {
         this.model = model;
         Size = size;
         Life = size;
-        Name = "name";
+        Name = name;
 
         var bounds = new BoundingSphere();
 
