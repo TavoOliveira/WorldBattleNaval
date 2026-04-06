@@ -16,14 +16,16 @@ public class PlacementScene : IScene
     private readonly GraphicsDevice graphicsDevice;
     private readonly SceneManager sceneManager;
     private UIContext uiCtx;
+    private ContentManager content;
 
     private Camera camera;
     private List<RadioShipModel> pendingShips;
     private List<Ship> cpuShips;
-    private int currentShipIndex;
+    private int selectedShipIndex;
 
     private Panel headerPanel;
     private Panel lateralPanel;
+    private StackPanel shipListStack;
 
     public bool IsReady { get; private set; }
 
@@ -35,11 +37,12 @@ public class PlacementScene : IScene
 
     public void LoadContent(ContentManager content)
     {
+        this.content = content;
         uiCtx = sceneManager.UIContext;
         camera = new Camera();
 
         InitializeShips();
-        InitializeUI(content);
+        InitializeUI();
 
         IsReady = true;
     }
@@ -49,11 +52,13 @@ public class PlacementScene : IScene
         var model = sceneManager.Resources.SubmarineModel;
 
         pendingShips = [
-            new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
+            new RadioShipModel { Ship = new Ship("Submarino", model, 3), IsSelected = true },
             new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
             new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
             new RadioShipModel { Ship = new Ship("Submarino", model, 3) }
         ];
+
+        selectedShipIndex = 0;
 
         cpuShips = [
             new Ship("Submarino", model, 3), new Ship("Submarino", model, 3),
@@ -61,7 +66,7 @@ public class PlacementScene : IScene
         ];
     }
 
-    private void InitializeUI(ContentManager content)
+    private void InitializeUI()
     {
         const int headerPanelHeight = 50;
 
@@ -73,17 +78,14 @@ public class PlacementScene : IScene
         var text = "Monte seu tabuleiro";
 
         var textSize = uiCtx.Font.MeasureString(text);
-        var labelX = (int)((graphicsDevice.Viewport.Width  - textSize.X) / 2);
+        var labelX = (int)((graphicsDevice.Viewport.Width - textSize.X) / 2);
         var labelY = (int)((headerPanelHeight - textSize.Y) / 2);
 
         headerPanel.AddChild(new Label(text, labelX, labelY, 0));
 
         const int lateralPanelWidth = 300;
 
-        var shipListStack = new StackPanel(0, 50, 0) { Spacing = 10 };
-
-        foreach (var radioShip in pendingShips)
-            shipListStack.AddChild(CreateShipItem(content, radioShip.Ship.Name, "images/screenshot_submarine", radioShip.IsSelected));
+        shipListStack = new StackPanel(0, 50, 0) { Spacing = 10 };
 
         lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, headerPanelHeight, lateralPanelWidth, graphicsDevice.Viewport.Height - headerPanelHeight)
         {
@@ -93,9 +95,18 @@ public class PlacementScene : IScene
 
         lateralPanel.AddChild(new Label("Suas embarcações", 10, 0, 0));
         lateralPanel.AddChild(shipListStack);
+
+        RefreshShipList();
     }
 
-    private UIElement CreateShipItem(ContentManager content, string name, string imagePath, bool isSelected)
+    private void RefreshShipList()
+    {
+        shipListStack.ClearChildren();
+        foreach (var radioShip in pendingShips)
+            shipListStack.AddChild(CreateShipItem(radioShip.Ship.Name, "images/screenshot_submarine", radioShip.IsSelected));
+    }
+
+    private UIElement CreateShipItem(string name, string imagePath, bool isSelected)
     {
         var subImage = content.Load<Texture2D>(imagePath);
         var iconSizeShip = content.Load<Texture2D>("images/icon_size_ship");
@@ -104,7 +115,7 @@ public class PlacementScene : IScene
         var panel = new Panel(0, 0, 0, 70)
         {
             Background = UITheme.LightBlue1,
-            BorderColor = UITheme.LightBlue2,
+            BorderColor = isSelected ? UITheme.LightBlue2 : Color.Transparent,
             Padding = 5
         };
 
@@ -129,8 +140,48 @@ public class PlacementScene : IScene
 
     public void Update(GameTime gameTime)
     {
-        if (currentShipIndex < pendingShips.Count)
+        if (pendingShips.Count > 0)
+        {
+            UpdateShipSelection();
             HandlePlacement();
+        }
+    }
+
+    private void UpdateShipSelection()
+    {
+        if (!InputManager.IsLeftClicked) return;
+
+        var mp = InputManager.MousePosition;
+        int lateralX = graphicsDevice.Viewport.Width - 300;
+
+        if (mp.X >= lateralX)
+        {
+            // Relative Y calculation considering lateralPanel position, padding, and shipListStack offset
+            int startY = 50 + 10 + 50; // headerPanelHeight + lateralPanel.Padding + shipListStack.Y
+            int relativeY = mp.Y - startY;
+
+            if (relativeY >= 0)
+            {
+                int index = relativeY / (70 + 10); // shipItemHeight + shipListStack.Spacing
+                if (index >= 0 && index < pendingShips.Count)
+                {
+                    int itemTop = index * (70 + 10);
+                    if (relativeY >= itemTop && relativeY < itemTop + 70)
+                    {
+                        SelectShip(index);
+                    }
+                }
+            }
+        }
+    }
+
+    private void SelectShip(int index)
+    {
+        for (int i = 0; i < pendingShips.Count; i++)
+            pendingShips[i].IsSelected = (i == index);
+
+        selectedShipIndex = index;
+        RefreshShipList();
     }
 
     public void Draw(GameTime gameTime)
@@ -144,10 +195,10 @@ public class PlacementScene : IScene
         foreach (var ship in player.Ships)
             ship.Draw(graphicsDevice, ship.PlacedRow, ship.PlacedCol, view, projection);
 
-        if (currentShipIndex < pendingShips.Count)
+        if (pendingShips.Count > 0)
         {
             var (row, col) = player.Board.CursorPosition;
-            pendingShips[currentShipIndex].Ship.Draw(graphicsDevice, row, col, view, projection);
+            pendingShips[selectedShipIndex].Ship.Draw(graphicsDevice, row, col, view, projection);
         }
 
         sceneManager.SpriteBatch.Begin();
@@ -159,7 +210,7 @@ public class PlacementScene : IScene
     private void HandlePlacement()
     {
         var player = sceneManager.GameState.Player;
-        var current = pendingShips[currentShipIndex].Ship;
+        var current = pendingShips[selectedShipIndex].Ship;
 
         if (TryGetBoardCell(out int row, out int col))
             player.Board.SetCursor(row, col);
@@ -169,6 +220,9 @@ public class PlacementScene : IScene
 
         if (InputManager.IsLeftClicked)
         {
+            var mp = InputManager.MousePosition;
+            if (mp.X >= graphicsDevice.Viewport.Width - 300) return; // Ignore click on lateral panel for placement
+
             var (r, c) = player.Board.CursorPosition;
 
             if (player.Board.CanPlace(r, c, current.Size, current.IsHorizontal))
@@ -176,7 +230,14 @@ public class PlacementScene : IScene
                 player.Board.Place(r, c, current.Size, current.IsHorizontal);
                 current.Place(r, c);
                 player.Ships.Add(current);
-                currentShipIndex++;
+
+                pendingShips.RemoveAt(selectedShipIndex);
+                if (pendingShips.Count > 0)
+                {
+                    selectedShipIndex = Math.Clamp(selectedShipIndex, 0, pendingShips.Count - 1);
+                    pendingShips[selectedShipIndex].IsSelected = true;
+                    RefreshShipList();
+                }
             }
         }
     }

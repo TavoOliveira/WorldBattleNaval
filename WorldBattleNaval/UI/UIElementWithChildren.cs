@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WorldBattleNaval.UI;
 
@@ -13,4 +13,7 @@ public abstract class UIElementWithChildren : UIElement
 
     public void RemoveChild(UIElement child) =>
         children.Remove(child);
+
+    public void ClearChildren() =>
+        children.Clear();
 }
