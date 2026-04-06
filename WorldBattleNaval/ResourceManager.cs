@@ -9,6 +9,7 @@ public class ResourceManager
     public Texture2D Pixel { get; }
     public SpriteFont Font { get; }
     public SpriteFont SmallFont { get; }
+    public SpriteFont TinyFont { get; }
     public Texture2D ButtonTexture { get; }
     public Texture2D ButtonPressedTexture { get; }
     public Texture2D LogoTexture { get; }
@@ -21,6 +22,7 @@ public class ResourceManager
 
         Font = content.Load<SpriteFont>("fonts/Font");
         SmallFont = content.Load<SpriteFont>("fonts/SmallFont");
+        TinyFont = content.Load<SpriteFont>("fonts/TinyFont");
         ButtonTexture = content.Load<Texture2D>("images/bg_button");
         ButtonPressedTexture = content.Load<Texture2D>("images/bg_button_pressed");
         LogoTexture = content.Load<Texture2D>("images/logo");

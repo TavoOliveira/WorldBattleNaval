@@ -27,6 +27,13 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/SmallFont.spritefont
 
+#begin fonts/TinyFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/TinyFont.spritefont
+
 #begin images/bg_button_pressed.png
 /importer:TextureImporter
 /processor:TextureProcessor
