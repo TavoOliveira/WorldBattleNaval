@@ -8,24 +8,36 @@ public class Camera
     public Matrix View { get; private set; }
     public Matrix Projection { get; private set; }
 
-    private float distance = 25f;
-    private float rotateX = MathHelper.ToRadians(55f);
-    private float rotateY = MathHelper.ToRadians(55f);
+    private float distance = 30f;
+    private float rotateX = MathHelper.ToRadians(89f);
+    private float rotateY = MathHelper.ToRadians(0f);
+
+    private Vector3 target = Vector3.Zero;
+    private float aspectRatio = 1280f / 720f;
 
     public Camera()
     {
-        Rebuild(1280f / 720f);
+        Move(5, 0);
     }
 
-    private void Rebuild(float aspectRatio)
+    public void Move(float deltaX, float deltaZ)
+    {
+        target.X += deltaX;
+        target.Z += deltaZ;
+        Rebuild();
+    } 
+
+    private void Rebuild()
     {
         var camX = distance * MathF.Sin(rotateY) * MathF.Cos(rotateX);
         var camY = distance * MathF.Sin(rotateX);
         var camZ = distance * MathF.Cos(rotateY) * MathF.Cos(rotateX);
 
+        var position = new Vector3(camX, camY, camZ) + target;
+
         View = Matrix.CreateLookAt(
-            new Vector3(camX, camY, camZ),
-            Vector3.Zero,
+            position,
+            target,
             Vector3.Up
         );
 
