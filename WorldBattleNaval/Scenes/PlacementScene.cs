@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using WorldBattleNaval.Entities;
 using WorldBattleNaval.Interfaces;
+using WorldBattleNaval.Models;
 using WorldBattleNaval.UI;
 
 namespace WorldBattleNaval.Scenes;
@@ -17,7 +18,7 @@ public class PlacementScene : IScene
     private UIContext uiCtx;
 
     private Camera camera;
-    private List<Ship> pendingShips;
+    private List<RadioShipModel> pendingShips;
     private List<Ship> cpuShips;
     private int currentShipIndex;
 
@@ -48,8 +49,10 @@ public class PlacementScene : IScene
         var model = sceneManager.Resources.SubmarineModel;
 
         pendingShips = [
-            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3),
-            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3)
+            new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
+            new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
+            new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
+            new RadioShipModel { Ship = new Ship("Submarino", model, 3) }
         ];
 
         cpuShips = [
@@ -79,8 +82,8 @@ public class PlacementScene : IScene
 
         var shipListStack = new StackPanel(0, 50, 0) { Spacing = 10 };
 
-        foreach (var ship in pendingShips)
-            shipListStack.AddChild(CreateShipItem(content, ship.Name, "images/screenshot_submarine"));
+        foreach (var radioShip in pendingShips)
+            shipListStack.AddChild(CreateShipItem(content, radioShip.Ship.Name, "images/screenshot_submarine", radioShip.IsSelected));
 
         lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, headerPanelHeight, lateralPanelWidth, graphicsDevice.Viewport.Height - headerPanelHeight)
         {
@@ -92,10 +95,11 @@ public class PlacementScene : IScene
         lateralPanel.AddChild(shipListStack);
     }
 
-    private UIElement CreateShipItem(ContentManager content, string name, string imagePath)
+    private UIElement CreateShipItem(ContentManager content, string name, string imagePath, bool isSelected)
     {
         var subImage = content.Load<Texture2D>(imagePath);
         var iconSizeShip = content.Load<Texture2D>("images/icon_size_ship");
+        var iconSelection = content.Load<Texture2D>("images/icon_selection");
 
         var panel = new Panel(0, 0, 0, 70)
         {
@@ -117,6 +121,7 @@ public class PlacementScene : IScene
         contentStack.AddChild(new Image(subImage, 50, 5, 100, 50));
 
         panel.AddChild(contentStack);
+        if (isSelected) panel.AddChild(new Image(iconSelection, 240, 0, 24));
         return panel;
     }
 
@@ -142,7 +147,7 @@ public class PlacementScene : IScene
         if (currentShipIndex < pendingShips.Count)
         {
             var (row, col) = player.Board.CursorPosition;
-            pendingShips[currentShipIndex].Draw(graphicsDevice, row, col, view, projection);
+            pendingShips[currentShipIndex].Ship.Draw(graphicsDevice, row, col, view, projection);
         }
 
         sceneManager.SpriteBatch.Begin();
@@ -154,7 +159,7 @@ public class PlacementScene : IScene
     private void HandlePlacement()
     {
         var player = sceneManager.GameState.Player;
-        var current = pendingShips[currentShipIndex];
+        var current = pendingShips[currentShipIndex].Ship;
 
         if (TryGetBoardCell(out int row, out int col))
             player.Board.SetCursor(row, col);
