@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace WorldBattleNaval.Entities;
 
-public class Ship
+public class CearenceCabecudo
 {
     public int Size { get; private set; }
 
@@ -18,7 +18,7 @@ public class Ship
     public int PlacedCol { get; private set; }
     public bool PlacedHorizontal { get; private set; }
 
-    public Ship(Model model, int size)
+    public CearenceCabecudo(Model model, int size)
     {
         this.model = model;
         Size = size;
