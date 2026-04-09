@@ -17,6 +17,7 @@ public class MainMenuScene : IScene
 
     private Button pvsCpuBtn;
     private Button pvsPBtn;
+    private Button missileTestBtn;
     private Button settingsBtn;
     private Button quitBtn;
 
@@ -38,6 +39,7 @@ public class MainMenuScene : IScene
 
         pvsCpuBtn = CreateMenuButton("Player vs CPU", res);
         pvsPBtn = CreateMenuButton("Player vs Player", res);
+        missileTestBtn = CreateMenuButton("Teste Missel", res);
         settingsBtn = CreateMenuButton("Configurações", res);
         quitBtn = CreateMenuButton("Sair", res);
 
@@ -47,6 +49,7 @@ public class MainMenuScene : IScene
         menuStack = new StackPanel(menuX, menuY, 0) { Spacing = 10 };
         menuStack.AddChild(pvsCpuBtn);
         menuStack.AddChild(pvsPBtn);
+        menuStack.AddChild(missileTestBtn);
         menuStack.AddChild(settingsBtn);
         menuStack.AddChild(quitBtn);
 
@@ -59,11 +62,15 @@ public class MainMenuScene : IScene
     {
         pvsCpuBtn.Update();
         pvsPBtn.Update();
+        missileTestBtn.Update();
         settingsBtn.Update();
         quitBtn.Update();
 
         if (pvsCpuBtn.IsClicked || pvsPBtn.IsClicked)
             sceneManager.ChangeScene(new PlacementScene(graphicsDevice, sceneManager));
+
+        if (missileTestBtn.IsClicked)
+            sceneManager.ChangeScene(new MissileTestScene(graphicsDevice, sceneManager));
     }
 
     public void Draw(GameTime gameTime)

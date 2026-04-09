@@ -14,6 +14,7 @@ public class ResourceManager
     public Texture2D ButtonPressedTexture { get; }
     public Texture2D LogoTexture { get; }
     public Model SubmarineModel { get; }
+    public Model Missil { get; }
 
     public ResourceManager(ContentManager content, GraphicsDevice graphicsDevice)
     {
@@ -27,5 +28,6 @@ public class ResourceManager
         ButtonPressedTexture = content.Load<Texture2D>("images/bg_button_pressed");
         LogoTexture = content.Load<Texture2D>("images/logo");
         SubmarineModel = content.Load<Model>("models/Submarine");
+        Missil = content.Load<Model>("models/Missel");
     }
 }
