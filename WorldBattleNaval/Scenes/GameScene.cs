@@ -1,7 +1,7 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using WorldBattleNaval.Interfaces;
 using WorldBattleNaval.UI;
 
@@ -12,6 +12,7 @@ public class GameScene : IScene
     private readonly GraphicsDevice graphicsDevice;
     private readonly SceneManager sceneManager;
 
+    private ContentManager sceneContent;
     private Camera camera;
 
     private GridAttack gridAttack;
@@ -25,8 +26,9 @@ public class GameScene : IScene
         this.sceneManager = sceneManager;
     }
 
-    public void LoadContent(ContentManager content)
+    public void LoadContent(IServiceProvider services)
     {
+        sceneContent = new ContentManager(services) { RootDirectory = "Content" };
         camera = new Camera();
 
         var screenWidth = graphicsDevice.Viewport.Width;
@@ -34,15 +36,20 @@ public class GameScene : IScene
 
         var size = 600;
 
-        var ssRadar = content.Load<Texture2D>("images/radar_spritesheet");
+        var ssRadar = sceneContent.Load<Texture2D>("images/radar_spritesheet");
 
-        gridAttack = new GridAttack(ssRadar, (screenWidth - size) / 2 , (screenHeight - size) / 2, size);
+        gridAttack = new GridAttack(ssRadar, (screenWidth - size) / 2, (screenHeight - size) / 2, size);
 
         IsReady = true;
     }
 
     public void Unload()
     {
+        sceneContent?.Unload();
+        sceneContent?.Dispose();
+        sceneContent = null;
+        gridAttack = null;
+        gridTween = null;
         IsReady = false;
     }
 
@@ -59,5 +66,4 @@ public class GameScene : IScene
         gridAttack.Draw(sceneManager.UIContext);
         sceneManager.SpriteBatch.End();
     }
-
 }

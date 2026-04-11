@@ -1,5 +1,5 @@
+using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using WorldBattleNaval.Interfaces;
 using WorldBattleNaval.UI;
@@ -8,7 +8,7 @@ namespace WorldBattleNaval;
 
 public class SceneManager
 {
-    private readonly ContentManager content;
+    private readonly IServiceProvider services;
 
     private IScene currentScene;
     private IScene pendingScene;
@@ -18,10 +18,10 @@ public class SceneManager
     public ResourceManager Resources { get; }
     public UIContext UIContext { get; }
 
-    public SceneManager(ContentManager content, SpriteBatch spriteBatch, GameState gameState,
+    public SceneManager(IServiceProvider services, SpriteBatch spriteBatch, GameState gameState,
         ResourceManager resources, UIContext uiContext)
     {
-        this.content = content;
+        this.services = services;
         SpriteBatch = spriteBatch;
         GameState = gameState;
         Resources = resources;
@@ -38,7 +38,7 @@ public class SceneManager
         if (pendingScene != null)
         {
             if (!pendingScene.IsReady)
-                pendingScene.LoadContent(content);
+                pendingScene.LoadContent(services);
 
             if (pendingScene.IsReady)
             {

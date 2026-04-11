@@ -12,8 +12,6 @@ public class ResourceManager
     public SpriteFont TinyFont { get; }
     public Texture2D ButtonTexture { get; }
     public Texture2D ButtonPressedTexture { get; }
-    public Texture2D LogoTexture { get; }
-    public Model SubmarineModel { get; }
 
     public ResourceManager(ContentManager content, GraphicsDevice graphicsDevice)
     {
@@ -25,7 +23,5 @@ public class ResourceManager
         TinyFont = content.Load<SpriteFont>("fonts/TinyFont");
         ButtonTexture = content.Load<Texture2D>("images/bg_button");
         ButtonPressedTexture = content.Load<Texture2D>("images/bg_button_pressed");
-        LogoTexture = content.Load<Texture2D>("images/logo");
-        SubmarineModel = content.Load<Model>("models/Submarine");
     }
 }

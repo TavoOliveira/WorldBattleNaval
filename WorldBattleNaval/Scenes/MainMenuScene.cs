@@ -1,7 +1,7 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Media;
 using WorldBattleNaval.Interfaces;
 using WorldBattleNaval.UI;
 
@@ -13,6 +13,7 @@ public class MainMenuScene : IScene
     private readonly SceneManager sceneManager;
     private UIContext uiCtx;
 
+    private ContentManager sceneContent;
     private Image logoImg;
     private StackPanel menuStack;
 
@@ -29,17 +30,16 @@ public class MainMenuScene : IScene
         this.sceneManager = sceneManager;
     }
 
-    public void LoadContent(ContentManager content)
+    public void LoadContent(IServiceProvider services)
     {
-        // var song = content.Load<Song>("songs/Mar de Ferro");
-        //
-        // MediaPlayer.Play(song);
-        
+        sceneContent = new ContentManager(services) { RootDirectory = "Content" };
+
         var res = sceneManager.Resources;
         uiCtx = sceneManager.UIContext;
 
-        var logoX = graphicsDevice.Viewport.Width / 2 - res.LogoTexture.Width / 2;
-        logoImg = new Image(res.LogoTexture, logoX, 100);
+        var logoTexture = sceneContent.Load<Texture2D>("images/logo");
+        var logoX = graphicsDevice.Viewport.Width / 2 - logoTexture.Width / 2;
+        logoImg = new Image(logoTexture, logoX, 100);
 
         pvsCpuBtn = CreateMenuButton("Player vs CPU", res);
         pvsPBtn = CreateMenuButton("Player vs Player", res);
@@ -58,7 +58,19 @@ public class MainMenuScene : IScene
         IsReady = true;
     }
 
-    public void Unload() => IsReady = false;
+    public void Unload()
+    {
+        sceneContent?.Unload();
+        sceneContent?.Dispose();
+        sceneContent = null;
+        logoImg = null;
+        menuStack = null;
+        pvsCpuBtn = null;
+        pvsPBtn = null;
+        settingsBtn = null;
+        quitBtn = null;
+        IsReady = false;
+    }
 
     public void Update(GameTime gameTime)
     {

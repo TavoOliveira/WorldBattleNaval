@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,12 +14,17 @@ public class PlacementScene : IScene
 {
     private readonly GraphicsDevice graphicsDevice;
     private readonly SceneManager sceneManager;
-    private ContentManager content;
 
+    private ContentManager sceneContent;
     private Camera camera;
     private List<RadioShipModel> pendingShips;
     private List<Ship> cpuShips;
     private int selectedShipIndex;
+
+    private Texture2D texSubmarine;
+    private Texture2D texIconSize;
+    private Texture2D texIconSelection;
+    private Model submarineModel;
 
     private Panel headerPanel;
     private Panel lateralPanel;
@@ -34,10 +38,15 @@ public class PlacementScene : IScene
         this.sceneManager = sceneManager;
     }
 
-    public void LoadContent(ContentManager content)
+    public void LoadContent(IServiceProvider services)
     {
-        this.content = content;
+        sceneContent = new ContentManager(services) { RootDirectory = "Content" };
         camera = new Camera();
+
+        texSubmarine = sceneContent.Load<Texture2D>("images/screenshot_submarine");
+        texIconSize = sceneContent.Load<Texture2D>("images/icon_size_ship");
+        texIconSelection = sceneContent.Load<Texture2D>("images/icon_selection");
+        submarineModel = sceneContent.Load<Model>("models/Submarine");
 
         InitializeShips();
         InitializeUI();
@@ -47,20 +56,18 @@ public class PlacementScene : IScene
 
     private void InitializeShips()
     {
-        var model = sceneManager.Resources.SubmarineModel;
-
         pendingShips = [
-            new RadioShipModel { Ship = new Ship("Submarino", model, 3), IsSelected = true },
-            new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
-            new RadioShipModel { Ship = new Ship("Submarino", model, 3) },
-            new RadioShipModel { Ship = new Ship("Submarino", model, 3) }
+            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3), IsSelected = true },
+            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3) },
+            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3) },
+            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3) }
         ];
 
         selectedShipIndex = 0;
 
         cpuShips = [
-            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3),
-            new Ship("Submarino", model, 3), new Ship("Submarino", model, 3)
+            new Ship("Submarino", submarineModel, 3), new Ship("Submarino", submarineModel, 3),
+            new Ship("Submarino", submarineModel, 3), new Ship("Submarino", submarineModel, 3)
         ];
     }
 
@@ -101,14 +108,11 @@ public class PlacementScene : IScene
     {
         shipListStack.ClearChildren();
         foreach (var radioShip in pendingShips)
-            shipListStack.AddChild(CreateShipItem(radioShip.Ship.Name, "images/screenshot_submarine", radioShip.IsSelected));
+            shipListStack.AddChild(CreateShipItem(radioShip.Ship.Name, radioShip.IsSelected));
     }
 
-    private UIElement CreateShipItem(string name, string imagePath, bool isSelected)
+    private UIElement CreateShipItem(string name, bool isSelected)
     {
-        var subImage = content.Load<Texture2D>(imagePath);
-        var iconSizeShip = content.Load<Texture2D>("images/icon_size_ship");
-        var iconSelection = content.Load<Texture2D>("images/icon_selection");
 
         var panel = new Panel(0, 0, 0, 70)
         {
@@ -121,20 +125,32 @@ public class PlacementScene : IScene
         var contentLeftStack = new StackPanel(0, 0, 0) { Spacing = 5 };
         var iconContentStack = new StackPanel(0, 0, 0) { Spacing = 10, IsVertical = false };
 
-        iconContentStack.AddChild(new Image(iconSizeShip, 0, 0, 24));
+        iconContentStack.AddChild(new Image(texIconSize, 0, 0, 24));
         iconContentStack.AddChild(new Label("3 espaços", 0, 0, 0) { Font = sceneManager.Resources.TinyFont });
 
         contentLeftStack.AddChild(new Label(name, 0, 0, 0) { Font = sceneManager.Resources.SmallFont });
         contentLeftStack.AddChild(iconContentStack);
         contentStack.AddChild(contentLeftStack);
-        contentStack.AddChild(new Image(subImage, 50, 5, 100, 50));
+        contentStack.AddChild(new Image(texSubmarine, 50, 5, 100, 50));
 
         panel.AddChild(contentStack);
-        if (isSelected) panel.AddChild(new Image(iconSelection, 240, 0, 24));
+        if (isSelected) panel.AddChild(new Image(texIconSelection, 240, 0, 24));
         return panel;
     }
 
-    public void Unload() => IsReady = false;
+    public void Unload()
+    {
+        sceneContent?.Unload();
+        sceneContent?.Dispose();
+        sceneContent = null;
+        texSubmarine = null;
+        texIconSize = null;
+        texIconSelection = null;
+        headerPanel = null;
+        lateralPanel = null;
+        shipListStack = null;
+        IsReady = false;
+    }
 
     public void Update(GameTime gameTime)
     {
