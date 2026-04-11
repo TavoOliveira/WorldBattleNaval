@@ -5,7 +5,7 @@
 /intermediateDir:obj/$(Platform)
 /platform:DesktopGL
 /config:
-/profile:Reach
+/profile:HiDef
 /compress:False
 
 #-------------------------------- References --------------------------------#
@@ -91,7 +91,7 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
+/processorParam:TextureFormat=DxtCompressed
 /build:images/logo.png
 
 #begin images/radar_spritesheet.png
@@ -103,7 +103,7 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
+/processorParam:TextureFormat=DxtCompressed
 /build:images/radar_spritesheet.png
 
 #begin images/screenshot_submarine.png
@@ -115,7 +115,7 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
+/processorParam:TextureFormat=DxtCompressed
 /build:images/screenshot_submarine.png
 
 #begin models/Submarine.fbx
@@ -134,7 +134,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=NoChange
+/processorParam:TextureFormat=DxtCompressed
 /build:models/Submarine.fbx
 
 #begin models/Submarino.fbx
@@ -153,7 +153,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=NoChange
+/processorParam:TextureFormat=DxtCompressed
 /build:models/Submarino.fbx
 
 #begin songs/Mar de Ferro.mp3
