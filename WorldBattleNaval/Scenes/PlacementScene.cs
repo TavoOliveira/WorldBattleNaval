@@ -15,7 +15,6 @@ public class PlacementScene : IScene
 {
     private readonly GraphicsDevice graphicsDevice;
     private readonly SceneManager sceneManager;
-    private UIContext uiCtx;
     private ContentManager content;
 
     private Camera camera;
@@ -38,7 +37,6 @@ public class PlacementScene : IScene
     public void LoadContent(ContentManager content)
     {
         this.content = content;
-        uiCtx = sceneManager.UIContext;
         camera = new Camera();
 
         InitializeShips();
@@ -77,7 +75,7 @@ public class PlacementScene : IScene
 
         var text = "Monte seu tabuleiro";
 
-        var textSize = uiCtx.Font.MeasureString(text);
+        var textSize = sceneManager.UIContext.Font.MeasureString(text);
         var labelX = (int)((graphicsDevice.Viewport.Width - textSize.X) / 2);
         var labelY = (int)((headerPanelHeight - textSize.Y) / 2);
 
@@ -202,8 +200,8 @@ public class PlacementScene : IScene
         }
 
         sceneManager.SpriteBatch.Begin();
-        headerPanel.Draw(uiCtx);
-        lateralPanel.Draw(uiCtx);
+        headerPanel.Draw(sceneManager.UIContext);
+        lateralPanel.Draw(sceneManager.UIContext);
         sceneManager.SpriteBatch.End();
     }
 

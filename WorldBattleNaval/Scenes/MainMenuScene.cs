@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 using WorldBattleNaval.Interfaces;
 using WorldBattleNaval.UI;
 
@@ -30,6 +31,10 @@ public class MainMenuScene : IScene
 
     public void LoadContent(ContentManager content)
     {
+        // var song = content.Load<Song>("songs/Mar de Ferro");
+        //
+        // MediaPlayer.Play(song);
+        
         var res = sceneManager.Resources;
         uiCtx = sceneManager.UIContext;
 
@@ -63,7 +68,7 @@ public class MainMenuScene : IScene
         quitBtn.Update();
 
         if (pvsCpuBtn.IsClicked || pvsPBtn.IsClicked)
-            sceneManager.ChangeScene(new PlacementScene(graphicsDevice, sceneManager));
+            sceneManager.ChangeScene(new GameScene(graphicsDevice, sceneManager));
     }
 
     public void Draw(GameTime gameTime)
