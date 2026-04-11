@@ -1,6 +1,6 @@
 namespace WorldBattleNaval.Enums;
 
-public enum CellState
+public enum ECellState
 {
     EMPTY,
     OCCUPIED,

@@ -1,7 +1,7 @@
 namespace WorldBattleNaval.Enums;
 
-public enum Turn
+public enum ETurn
 {
-    Player,
-    Cpu
+    PLAYER,
+    CPU
 }

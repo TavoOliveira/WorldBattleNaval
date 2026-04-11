@@ -8,27 +8,27 @@ public class GameState
     public Player Player { get; } = new();
     public Cpu Cpu { get; } = new();
 
-    public GamePhase Phase { get; private set; } = GamePhase.Placement;
-    public Turn CurrentTurn { get; private set; } = Turn.Player;
+    public EGamePhase Phase { get; private set; } = EGamePhase.PLACEMENT;
+    public ETurn CurrentTurn { get; private set; } = ETurn.PLAYER;
 
-    public bool IsGameOver => Phase == GamePhase.GameOver;
+    public bool IsGameOver => Phase == EGamePhase.GAME_OVER;
     public bool PlayerWon => Cpu.IsDefeated;
     public bool CpuWon => Player.IsDefeated;
 
     public void StartBattle()
     {
-        Phase = GamePhase.Battle;
-        CurrentTurn = Turn.Player;
+        Phase = EGamePhase.BATTLE;
+        CurrentTurn = ETurn.PLAYER;
     }
 
     public void SwitchTurn()
     {
-        CurrentTurn = CurrentTurn == Turn.Player ? Turn.Cpu : Turn.Player;
+        CurrentTurn = CurrentTurn == ETurn.PLAYER ? ETurn.CPU : ETurn.PLAYER;
     }
 
     public void CheckGameOver()
     {
         if (Player.IsDefeated || Cpu.IsDefeated)
-            Phase = GamePhase.GameOver;
+            Phase = EGamePhase.GAME_OVER;
     }
 }

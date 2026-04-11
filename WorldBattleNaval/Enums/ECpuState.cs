@@ -1,6 +1,6 @@
 namespace WorldBattleNaval.Enums;
 
-public enum CpuState
+public enum ECpuState
 {
     SEARCH,
     TARGET,
