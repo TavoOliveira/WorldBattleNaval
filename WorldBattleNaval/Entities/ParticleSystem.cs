@@ -8,8 +8,8 @@ namespace WorldBattleNaval.Entities;
 
 public class ParticleSystem
 {
-    private const int POOL_SIZE = 1024;
-    private const float EMIT_INTERVAL = 0.12f;
+    private const int POOL_SIZE = 2048;
+    private const float EMIT_INTERVAL = 0.05f;
 
     private struct Particle
     {
@@ -34,7 +34,7 @@ public class ParticleSystem
 
     private readonly List<Emitter> emitters = [];
     private readonly BasicEffect effect;
-    private readonly Random rng = new();
+    private readonly Random rand = new();
 
     public ParticleSystem(GraphicsDevice graphicsDevice)
     {
@@ -92,17 +92,17 @@ public class ParticleSystem
 
     private void SpawnParticle(Vector3 origin)
     {
-        float jitterX = ((float)rng.NextDouble() - 0.5f) * 0.4f;
-        float jitterZ = ((float)rng.NextDouble() - 0.5f) * 0.4f;
-        float life = 1.4f + (float)rng.NextDouble() * 0.9f;
+        float jitterX = ((float)rand.NextDouble() - 0.5f) * 0.4f;
+        float jitterZ = ((float)rand.NextDouble() - 0.5f) * 0.4f;
+        float life = 1.4f + (float)rand.NextDouble() * 0.9f;
 
         particles[activeCount++] = new Particle
         {
             Position = origin + new Vector3(jitterX * 0.5f, 0.1f, jitterZ * 0.5f),
-            Velocity = new Vector3(jitterX, 1.1f + (float)rng.NextDouble() * 0.8f, jitterZ),
+            Velocity = new Vector3(jitterX, 1.1f + (float)rand.NextDouble() * 0.8f, jitterZ),
             Life = life,
             MaxLife = life,
-            Size = 0.4f + (float)rng.NextDouble() * 0.25f
+            Size = 0.4f + (float)rand.NextDouble() * 0.25f
         };
     }
 

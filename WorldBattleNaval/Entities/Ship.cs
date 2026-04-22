@@ -13,6 +13,7 @@ public class Ship
     private readonly Model model;
     private readonly Vector3 modelCenter;
     private readonly float modelRadius;
+    private readonly float baseRotation;
     
     public string Name { get; private set; }
     public bool IsHorizontal { get; private set; } = true;
@@ -21,9 +22,10 @@ public class Ship
     public int PlacedCol { get; private set; }
     public bool PlacedHorizontal { get; private set; }
 
-    public Ship(string name, Model model, int size)
+    public Ship(string name, Model model, int size, float baseRotation = 0f)
     {
         this.model = model;
+        this.baseRotation = baseRotation;
         Size = size;
         Life = size;
         Name = name;
@@ -58,7 +60,7 @@ public class Ship
             centerZ = -half + row * Board.CellSize + (Size * Board.CellSize) / 2f;
         }
 
-        var rotateY = IsHorizontal ? MathHelper.ToRadians(90f) : 0f;
+        var rotateY = (IsHorizontal ? MathHelper.ToRadians(90f) : 0f) + baseRotation;
 
         var (offsetX, offsetZ) = IsHorizontal
             ? (-modelCenter.Z * scale, modelCenter.X * scale)

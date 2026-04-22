@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using WorldBattleNaval.Entities;
 using WorldBattleNaval.Enums;
 using WorldBattleNaval.Interfaces;
@@ -96,6 +97,13 @@ public class GameScene : IScene
         lateralPanel.AddChild(new Label("Vida das embarcações", 10, 30, 0));
         lateralPanel.AddChild(shipListStack);
 
+        var ctrlInfo = new Label("Segure CTRL para ver o tabuleiro", 10, lateralPanelHeight - 50, LateralPanelWidth - 20)
+        {
+            Font = sceneManager.Resources.TinyFont,
+            Color = Color.White
+        };
+        lateralPanel.AddChild(ctrlInfo);
+
         RefreshShipList();
     }
 
@@ -156,6 +164,8 @@ public class GameScene : IScene
             UpdatePlayerTurn(gameTime);
         else
             UpdateCpuTurn(gameTime);
+
+        camera.Update(gameTime);
     }
 
     private void UpdatePlayerTurn(GameTime gameTime)
@@ -200,6 +210,7 @@ public class GameScene : IScene
             float x = -half + col * Board.CellSize + Board.CellSize / 2f;
             float z = -half + row * Board.CellSize + Board.CellSize / 2f;
             particleSystem.AddEmitter(new Vector3(x, Board.PlaneHeight, z));
+            camera.Shake(0.4f, 1.5f);
         }
 
         RefreshShipList();
@@ -210,7 +221,11 @@ public class GameScene : IScene
     private void EndTurn()
     {
         sceneManager.GameState.CheckGameOver();
-        if (sceneManager.GameState.IsGameOver) return;
+        if (sceneManager.GameState.IsGameOver)
+        {
+            sceneManager.ChangeScene(new GameResultScene(graphicsDevice, sceneManager, sceneManager.GameState.PlayerWon));
+            return;
+        }
 
         sceneManager.GameState.SwitchTurn();
 
@@ -233,14 +248,29 @@ public class GameScene : IScene
         player.Board.DrawHit(graphicsDevice, view, projection);
 
         foreach (var ship in player.Ships)
-            ship.Draw(graphicsDevice, ship.PlacedRow, ship.PlacedCol, view, projection);
+        {
+            if (ship.Life > 0)
+                ship.Draw(graphicsDevice, ship.PlacedRow, ship.PlacedCol, view, projection, 0.5f);
+        }
 
         particleSystem.Draw(graphicsDevice, camera);
 
         sceneManager.SpriteBatch.Begin();
-        headerPanel.Draw(sceneManager.UIContext);
-        lateralPanel.Draw(sceneManager.UIContext);
-        gridAttack.Draw(sceneManager.UIContext);
+        
+        var uiCtx = sceneManager.UIContext;
+        int sx = (int)(camera.ShakeOffset.X * 10f); // Amplify for 2D UI
+        int sy = (int)(camera.ShakeOffset.Y * 10f);
+        
+        uiCtx.PushOffset(sx, sy);
+        
+        headerPanel.Draw(uiCtx);
+        lateralPanel.Draw(uiCtx);
+
+        if (!InputManager.IsKeyDown(Keys.LeftControl) && !InputManager.IsKeyDown(Keys.RightControl))
+            gridAttack.Draw(uiCtx);
+
+        uiCtx.PopOffset(sx, sy);
+        
         sceneManager.SpriteBatch.End();
     }
 }

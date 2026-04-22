@@ -32,6 +32,8 @@ public class PlacementScene : IScene
     private StackPanel shipListStack;
     private Button btnPlay;
 
+    private bool isMouseOverBoard;
+
     public bool IsReady { get; private set; }
 
     public PlacementScene(GraphicsDevice graphicsDevice, SceneManager sceneManager)
@@ -70,22 +72,24 @@ public class PlacementScene : IScene
         var cruiserTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_cruiser");
         var destroyerTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_destroyer");
 
+        var rot90 = MathHelper.ToRadians(-90f);
+
         pendingShips = [
             new RadioShipModel { Ship = new Ship("Porta-aviões", carrierModel, 5), Screenshot = carrierTex, IsSelected = true },
-            new RadioShipModel { Ship = new Ship("Encouraçado", battleshipModel, 4), Screenshot = battleshipTex },
+            new RadioShipModel { Ship = new Ship("Encouraçado", battleshipModel, 4, rot90), Screenshot = battleshipTex },
             new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3), Screenshot = submarineTex },
-            new RadioShipModel { Ship = new Ship("Cruzador", cruiserModel, 3), Screenshot = cruiserTex },
-            new RadioShipModel { Ship = new Ship("Destroier", destroyerModel, 2), Screenshot = destroyerTex }
+            new RadioShipModel { Ship = new Ship("Cruzador", cruiserModel, 3, rot90), Screenshot = cruiserTex },
+            new RadioShipModel { Ship = new Ship("Destroier", destroyerModel, 2, rot90), Screenshot = destroyerTex }
         ];
 
         selectedShipIndex = 0;
 
         cpuShips = [
             new Ship("Porta-aviões", carrierModel, 5),
-            new Ship("Encouraçado", battleshipModel, 4),
+            new Ship("Encouraçado", battleshipModel, 4, rot90),
             new Ship("Submarino", submarineModel, 3),
-            new Ship("Cruzador", cruiserModel, 3),
-            new Ship("Destroier", destroyerModel, 2)
+            new Ship("Cruzador", cruiserModel, 3, rot90),
+            new Ship("Destroier", destroyerModel, 2, rot90)
         ];
     }
 
@@ -127,11 +131,13 @@ public class PlacementScene : IScene
         };
         lateralPanel.AddChild(infoLabel);
 
-        btnPlay = new Button(new Label("JOGAR", 0, 15, 0) { Font = sceneManager.Resources.SmallFont }, texButton, texButtonPressed, 10, lateralPanelHeight - 70, lateralPanelWidth - 20)
-        {
-            Height = 50,
-            Enabled = false
-        };
+        btnPlay = Button.ReturnButton("Jogar", sceneManager.Resources, sceneManager.UIContext);
+        btnPlay.X = 10;
+        btnPlay.Y = lateralPanelHeight - 70;
+        btnPlay.Width = lateralPanelWidth - 20;
+        btnPlay.Height = 50;
+        btnPlay.Enabled = false;
+        
         lateralPanel.AddChild(btnPlay);
 
         RefreshShipList();
@@ -201,6 +207,7 @@ public class PlacementScene : IScene
         else
         {
             btnPlay.Enabled = true;
+            isMouseOverBoard = false;
         }
 
         btnPlay.Update();
@@ -219,13 +226,12 @@ public class PlacementScene : IScene
 
         if (mp.X >= lateralX)
         {
-            // Relative Y calculation considering lateralPanel position, padding, and shipListStack offset
-            int startY = 50 + 10 + 50; // headerPanelHeight + lateralPanel.Padding + shipListStack.Y
+            int startY = 50 + 10 + 50;
             int relativeY = mp.Y - startY;
 
             if (relativeY >= 0)
             {
-                int index = relativeY / (70 + 10); // shipItemHeight + shipListStack.Spacing
+                int index = relativeY / (70 + 10);
                 if (index >= 0 && index < pendingShips.Count)
                 {
                     int itemTop = index * (70 + 10);
@@ -257,12 +263,17 @@ public class PlacementScene : IScene
         player.Board.DrawOccupied(graphicsDevice, view, projection);
 
         foreach (var ship in player.Ships)
-            ship.Draw(graphicsDevice, ship.PlacedRow, ship.PlacedCol, view, projection);
+            ship.Draw(graphicsDevice, ship.PlacedRow, ship.PlacedCol, view, projection, 0.5f);
 
         if (pendingShips.Count > 0)
         {
             var (row, col) = player.Board.CursorPosition;
-            pendingShips[selectedShipIndex].Ship.Draw(graphicsDevice, row, col, view, projection, 0.5f);
+            if (isMouseOverBoard)
+            {
+                var ship = pendingShips[selectedShipIndex].Ship;
+                player.Board.DrawPreview(graphicsDevice, row, col, ship.Size, ship.IsHorizontal, view, projection);
+                ship.Draw(graphicsDevice, row, col, view, projection, 0.5f);
+            }
         }
 
         sceneManager.SpriteBatch.Begin();
@@ -276,7 +287,8 @@ public class PlacementScene : IScene
         var player = sceneManager.GameState.Player;
         var current = pendingShips[selectedShipIndex].Ship;
 
-        if (TryGetBoardCell(out int row, out int col))
+        isMouseOverBoard = TryGetBoardCell(out int row, out int col);
+        if (isMouseOverBoard)
             player.Board.SetCursor(row, col);
 
         if (InputManager.IsRightPressed || InputManager.IsKeyPressed(Keys.R))
@@ -285,11 +297,11 @@ public class PlacementScene : IScene
         if (InputManager.IsLeftClicked)
         {
             var mp = InputManager.MousePosition;
-            if (mp.X >= graphicsDevice.Viewport.Width - 300) return; // Ignore click on lateral panel for placement
+            if (mp.X >= graphicsDevice.Viewport.Width - 300) return;
 
             var (r, c) = player.Board.CursorPosition;
 
-            if (player.Board.CanPlace(r, c, current.Size, current.IsHorizontal))
+            if (isMouseOverBoard && player.Board.CanPlace(r, c, current.Size, current.IsHorizontal))
             {
                 player.Board.Place(r, c, current.Size, current.IsHorizontal);
                 current.Place(r, c);
@@ -300,12 +312,13 @@ public class PlacementScene : IScene
                 {
                     selectedShipIndex = Math.Clamp(selectedShipIndex, 0, pendingShips.Count - 1);
                     pendingShips[selectedShipIndex].IsSelected = true;
-                    RefreshShipList();
                 }
                 else
                 {
                     sceneManager.GameState.Cpu.Setup(cpuShips);
                 }
+                
+                RefreshShipList();
             }
         }
     }
