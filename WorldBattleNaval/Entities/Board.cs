@@ -10,6 +10,7 @@ public class Board
 {
     public const int Size = 10;
     public const float CellSize = 2f;
+    public const float PlaneHeight = 0.18f;
 
     private readonly Cell[,] cells = new Cell[Size, Size];
     private int cursorRow;
@@ -19,6 +20,12 @@ public class Board
     private BasicEffect effect;
 
     public (int row, int col) CursorPosition => (cursorRow, cursorCol);
+
+    public ECellState GetState(int row, int col) => cells[row, col].State;
+
+    public void MarkHit(int row, int col) => cells[row, col].State = ECellState.HIT;
+
+    public void MarkMiss(int row, int col) => cells[row, col].State = ECellState.MISS;
 
     public Board()
     {
@@ -137,18 +144,110 @@ public class Board
         var lines = new List<VertexPositionColor>();
         var half = Size * CellSize / 2f;
         var color = new Color(200, 230, 255, 200);
-        var height = 0.18f;
 
         for (var i = 0; i <= Size; i++)
         {
             var currentLine = -half + i * CellSize;
-            lines.Add(new VertexPositionColor(new Vector3(-half, height, currentLine), color));
-            lines.Add(new VertexPositionColor(new Vector3(half, height, currentLine), color));
-            lines.Add(new VertexPositionColor(new Vector3(currentLine, height, -half), color));
-            lines.Add(new VertexPositionColor(new Vector3(currentLine, height, half), color));
+            lines.Add(new VertexPositionColor(new Vector3(-half, PlaneHeight, currentLine), color));
+            lines.Add(new VertexPositionColor(new Vector3(half, PlaneHeight, currentLine), color));
+            lines.Add(new VertexPositionColor(new Vector3(currentLine, PlaneHeight, -half), color));
+            lines.Add(new VertexPositionColor(new Vector3(currentLine, PlaneHeight, half), color));
         }
 
         gridLines = [.. lines];
+    }
+
+    public void DrawOccupied(GraphicsDevice graphicsDevice, Matrix view, Matrix projection)
+    {
+        if (effect == null) InitEffect(graphicsDevice);
+
+        var quads = new List<VertexPositionColor>();
+        var half = Size * CellSize / 2f;
+        var height = PlaneHeight + 0.005f;
+        var color = new Color(80, 220, 120, 160);
+
+        for (int row = 0; row < Size; row++)
+        for (int col = 0; col < Size; col++)
+        {
+            if (cells[row, col].State != ECellState.OCCUPIED) continue;
+
+            float x0 = -half + col * CellSize;
+            float x1 = x0 + CellSize;
+            float z0 = -half + row * CellSize;
+            float z1 = z0 + CellSize;
+
+            var v00 = new VertexPositionColor(new Vector3(x0, height, z0), color);
+            var v10 = new VertexPositionColor(new Vector3(x1, height, z0), color);
+            var v01 = new VertexPositionColor(new Vector3(x0, height, z1), color);
+            var v11 = new VertexPositionColor(new Vector3(x1, height, z1), color);
+
+            quads.Add(v00); quads.Add(v10); quads.Add(v11);
+            quads.Add(v00); quads.Add(v11); quads.Add(v01);
+        }
+
+        if (quads.Count == 0) return;
+
+        graphicsDevice.BlendState = BlendState.AlphaBlend;
+        graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+        graphicsDevice.RasterizerState = RasterizerState.CullNone;
+
+        effect.View = view;
+        effect.Projection = projection;
+        effect.World = Matrix.Identity;
+        effect.CurrentTechnique.Passes[0].Apply();
+
+        var vertices = quads.ToArray();
+        graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+
+        graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        graphicsDevice.DepthStencilState = DepthStencilState.Default;
+    }
+
+    public void DrawHit(GraphicsDevice graphicsDevice, Matrix view, Matrix projection)
+    {
+        if (effect == null) InitEffect(graphicsDevice);
+
+        var quads = new List<VertexPositionColor>();
+        var half = Size * CellSize / 2f;
+        var height = PlaneHeight + 0.007f;
+        var color = new Color(220, 40, 40, 180);
+
+        for (int row = 0; row < Size; row++)
+        for (int col = 0; col < Size; col++)
+        {
+            var state = cells[row, col].State;
+            if (state != ECellState.HIT && state != ECellState.MISS) continue;
+
+            float x0 = -half + col * CellSize;
+            float x1 = x0 + CellSize;
+            float z0 = -half + row * CellSize;
+            float z1 = z0 + CellSize;
+
+            var v00 = new VertexPositionColor(new Vector3(x0, height, z0), color);
+            var v10 = new VertexPositionColor(new Vector3(x1, height, z0), color);
+            var v01 = new VertexPositionColor(new Vector3(x0, height, z1), color);
+            var v11 = new VertexPositionColor(new Vector3(x1, height, z1), color);
+
+            quads.Add(v00); quads.Add(v10); quads.Add(v11);
+            quads.Add(v00); quads.Add(v11); quads.Add(v01);
+        }
+
+        if (quads.Count == 0) return;
+
+        graphicsDevice.BlendState = BlendState.AlphaBlend;
+        graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+        graphicsDevice.RasterizerState = RasterizerState.CullNone;
+
+        effect.View = view;
+        effect.Projection = projection;
+        effect.World = Matrix.Identity;
+        effect.CurrentTechnique.Passes[0].Apply();
+
+        var vertices = quads.ToArray();
+        graphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+
+        graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        graphicsDevice.DepthStencilState = DepthStencilState.Default;
     }
 
     private void DrawGridLines(GraphicsDevice graphicsDevice, BasicEffect effect)

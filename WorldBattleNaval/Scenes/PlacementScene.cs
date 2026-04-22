@@ -58,11 +58,11 @@ public class PlacementScene : IScene
 
     private void InitializeShips()
     {
-        var carrierModel = sceneContent.Load<Model>("models/aircraft_carrier");
-        var battleshipModel = sceneContent.Load<Model>("models/battleship");
-        var submarineModel = sceneContent.Load<Model>("models/Submarine");
-        var cruiserModel = sceneContent.Load<Model>("models/cruiser");
-        var destroyerModel = sceneContent.Load<Model>("models/destroyer");
+        var carrierModel = sceneManager.Resources.CarrierModel;
+        var battleshipModel = sceneManager.Resources.BattleshipModel;
+        var submarineModel = sceneManager.Resources.SubmarineModel;
+        var cruiserModel = sceneManager.Resources.CruiserModel;
+        var destroyerModel = sceneManager.Resources.DestroyerModel;
 
         var carrierTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_aircraft_carrier");
         var battleshipTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_battleship");
@@ -254,6 +254,7 @@ public class PlacementScene : IScene
         var player = sceneManager.GameState.Player;
 
         player.Board.Draw(graphicsDevice, view, projection);
+        player.Board.DrawOccupied(graphicsDevice, view, projection);
 
         foreach (var ship in player.Ships)
             ship.Draw(graphicsDevice, ship.PlacedRow, ship.PlacedCol, view, projection);
@@ -261,7 +262,7 @@ public class PlacementScene : IScene
         if (pendingShips.Count > 0)
         {
             var (row, col) = player.Board.CursorPosition;
-            pendingShips[selectedShipIndex].Ship.Draw(graphicsDevice, row, col, view, projection);
+            pendingShips[selectedShipIndex].Ship.Draw(graphicsDevice, row, col, view, projection, 0.5f);
         }
 
         sceneManager.SpriteBatch.Begin();
@@ -322,7 +323,7 @@ public class PlacementScene : IScene
 
         if (MathF.Abs(dir.Y) < 1e-6f) return false;
 
-        float t = -near.Y / dir.Y;
+        float t = (Board.PlaneHeight - near.Y) / dir.Y;
         if (t < 0f) return false;
 
         var hit = near + t * dir;

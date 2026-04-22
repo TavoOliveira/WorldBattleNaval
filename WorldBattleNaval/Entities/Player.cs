@@ -13,4 +13,18 @@ public class Player
     {
         Board = new Board();
     }
+
+    public (bool hit, bool sunk) ReceiveAttack(int row, int col)
+    {
+        var ship = Ships.FirstOrDefault(s => s.Covers(row, col));
+        if (ship != null)
+        {
+            ship.TakeDamage();
+            Board.MarkHit(row, col);
+            return (true, ship.IsSunk);
+        }
+
+        Board.MarkMiss(row, col);
+        return (false, false);
+    }
 }

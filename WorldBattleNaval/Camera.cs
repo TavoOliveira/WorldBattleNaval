@@ -7,6 +7,9 @@ public class Camera
 {
     public Matrix View { get; private set; }
     public Matrix Projection { get; private set; }
+    public Vector3 Position { get; private set; }
+    public Vector3 Right { get; private set; }
+    public Vector3 Up { get; private set; }
 
     private float distance = 30f;
     private float rotateX = MathHelper.ToRadians(89f);
@@ -33,13 +36,16 @@ public class Camera
         var camY = distance * MathF.Sin(rotateX);
         var camZ = distance * MathF.Cos(rotateY) * MathF.Cos(rotateX);
 
-        var position = new Vector3(camX, camY, camZ) + target;
+        Position = new Vector3(camX, camY, camZ) + target;
 
         View = Matrix.CreateLookAt(
-            position,
+            Position,
             target,
             Vector3.Up
         );
+
+        Right = Vector3.Normalize(Vector3.Cross(Vector3.Up, Position - target));
+        Up = Vector3.Normalize(Vector3.Cross(Position - target, Right));
 
         Projection = Matrix.CreatePerspectiveFieldOfView(
             MathHelper.ToRadians(45f),
