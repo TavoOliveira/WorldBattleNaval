@@ -9,6 +9,7 @@ namespace WorldBattleNaval;
 public class SceneManager
 {
     private readonly IServiceProvider services;
+    private readonly Game game;
 
     private IScene currentScene;
     private IScene pendingScene;
@@ -18,9 +19,10 @@ public class SceneManager
     public ResourceManager Resources { get; }
     public UIContext UIContext { get; }
 
-    public SceneManager(IServiceProvider services, SpriteBatch spriteBatch, GameState gameState,
+    public SceneManager(Game game, IServiceProvider services, SpriteBatch spriteBatch, GameState gameState,
         ResourceManager resources, UIContext uiContext)
     {
+        this.game = game;
         this.services = services;
         SpriteBatch = spriteBatch;
         GameState = gameState;
@@ -31,6 +33,11 @@ public class SceneManager
     public void ChangeScene(IScene scene)
     {
         pendingScene = scene;
+    }
+
+    public void QuitGame()
+    {
+        game.Exit();
     }
 
     public void Update(GameTime gameTime)

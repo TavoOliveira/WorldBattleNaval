@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -58,5 +59,19 @@ public class Button : UIElement
         ctx.PopOffset(X, Y);
 
         return Height;
+    }
+
+    public static Button ReturnButton(string text, ResourceManager res, UIContext ctx)
+    {
+        const int buttonWidth  = 250;
+        const int buttonHeight = 50;
+        var gold = new Color(220, 160, 20);
+
+        var textSize = ctx.Font.MeasureString(text);
+        var labelX = (int)((buttonWidth  - textSize.X) / 2);
+        var labelY = (int)((buttonHeight - textSize.Y) / 2);
+
+        var label = new Label(text, labelX, labelY, 0) { Color = gold };
+        return new Button(label, res.ButtonTexture, res.ButtonPressedTexture, 0, 0, buttonWidth);
     }
 }

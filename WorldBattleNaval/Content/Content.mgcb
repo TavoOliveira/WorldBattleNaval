@@ -94,6 +94,18 @@
 /processorParam:TextureFormat=DxtCompressed
 /build:images/logo.png
 
+#begin images/perdeu.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/perdeu.png
+
 #begin images/radar_spritesheet.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -177,6 +189,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:images/target_circle.png
+
+#begin images/vitoria.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:images/vitoria.png
 
 #begin images/water_circle.png
 /importer:TextureImporter

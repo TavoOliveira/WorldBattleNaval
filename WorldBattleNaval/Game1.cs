@@ -31,7 +31,7 @@ public class Game1 : Game
         var spriteBatch = new SpriteBatch(GraphicsDevice);
         var resources   = new ResourceManager(Content, GraphicsDevice);
         var uiContext   = new UIContext(spriteBatch, resources.Pixel, resources.Font);
-        sceneManager = new SceneManager(Services, spriteBatch, new GameState(), resources, uiContext);
+        sceneManager = new SceneManager(this, Services, spriteBatch, new GameState(), resources, uiContext);
         sceneManager.ChangeScene(new MainMenuScene(GraphicsDevice, sceneManager));
     }
 

@@ -42,6 +42,7 @@ public class MainMenuScene : IScene
         logoImg = new Image(logoTexture, logoX, 100);
 
         pvsCpuBtn = CreateMenuButton("Player vs CPU", res);
+
         pvsPBtn = CreateMenuButton("Player vs Player", res);
         settingsBtn = CreateMenuButton("Configurações", res);
         quitBtn = CreateMenuButton("Sair", res);
@@ -81,6 +82,9 @@ public class MainMenuScene : IScene
 
         if (pvsCpuBtn.IsClicked || pvsPBtn.IsClicked)
             sceneManager.ChangeScene(new PlacementScene(graphicsDevice, sceneManager));
+
+        if (quitBtn.IsClicked)
+            sceneManager.QuitGame();
     }
 
     public void Draw(GameTime gameTime)
