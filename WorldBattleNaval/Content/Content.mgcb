@@ -182,7 +182,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:models/aircraft_carrier.fbx
 
 #begin models/battleship.fbx
@@ -201,7 +201,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:models/battleship.fbx
 
 #begin models/cruiser.fbx
@@ -220,7 +220,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:models/cruiser.fbx
 
 #begin models/destroyer.fbx
@@ -239,7 +239,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:models/destroyer.fbx
 
 #begin models/Submarine.fbx
@@ -258,7 +258,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:models/Submarine.fbx
 
 #begin models/Submarino.fbx
@@ -277,7 +277,7 @@
 /processorParam:RotationZ=0
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=DxtCompressed
+/processorParam:TextureFormat=NoChange
 /build:models/Submarino.fbx
 
 #begin songs/Mar de Ferro.mp3

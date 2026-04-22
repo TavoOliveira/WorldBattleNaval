@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using WorldBattleNaval.Entities;
 using WorldBattleNaval.Interfaces;
 using WorldBattleNaval.Models;
@@ -23,10 +24,13 @@ public class PlacementScene : IScene
 
     private Texture2D texIconSize;
     private Texture2D texIconSelection;
+    private Texture2D texButton;
+    private Texture2D texButtonPressed;
 
     private Panel headerPanel;
     private Panel lateralPanel;
     private StackPanel shipListStack;
+    private Button btnPlay;
 
     public bool IsReady { get; private set; }
 
@@ -43,6 +47,8 @@ public class PlacementScene : IScene
 
         texIconSize = sceneContent.Load<Texture2D>("images/icon_size_ship");
         texIconSelection = sceneContent.Load<Texture2D>("images/icon_selection");
+        texButton = sceneContent.Load<Texture2D>("images/bg_button");
+        texButtonPressed = sceneContent.Load<Texture2D>("images/bg_button_pressed");
 
         InitializeShips();
         InitializeUI();
@@ -101,10 +107,11 @@ public class PlacementScene : IScene
         headerPanel.AddChild(new Label(text, labelX, labelY, 0));
 
         const int lateralPanelWidth = 300;
+        int lateralPanelHeight = graphicsDevice.Viewport.Height - headerPanelHeight;
 
         shipListStack = new StackPanel(0, 50, 0) { Spacing = 10 };
 
-        lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, headerPanelHeight, lateralPanelWidth, graphicsDevice.Viewport.Height - headerPanelHeight)
+        lateralPanel = new Panel(graphicsDevice.Viewport.Width - lateralPanelWidth, headerPanelHeight, lateralPanelWidth, lateralPanelHeight)
         {
             Padding = 10,
             Background = UITheme.LightBlue1
@@ -112,6 +119,20 @@ public class PlacementScene : IScene
 
         lateralPanel.AddChild(new Label("Suas embarcações", 10, 0, 0));
         lateralPanel.AddChild(shipListStack);
+
+        var infoLabel = new Label("Clique direito ou R para girar", 10, lateralPanelHeight - 120, lateralPanelWidth - 20)
+        {
+            Font = sceneManager.Resources.SmallFont,
+            Color = Color.White
+        };
+        lateralPanel.AddChild(infoLabel);
+
+        btnPlay = new Button(new Label("JOGAR", 0, 15, 0) { Font = sceneManager.Resources.SmallFont }, texButton, texButtonPressed, 10, lateralPanelHeight - 70, lateralPanelWidth - 20)
+        {
+            Height = 50,
+            Enabled = false
+        };
+        lateralPanel.AddChild(btnPlay);
 
         RefreshShipList();
     }
@@ -161,9 +182,12 @@ public class PlacementScene : IScene
         sceneContent = null;
         texIconSize = null;
         texIconSelection = null;
+        texButton = null;
+        texButtonPressed = null;
         headerPanel = null;
         lateralPanel = null;
         shipListStack = null;
+        btnPlay = null;
         IsReady = false;
     }
 
@@ -173,6 +197,16 @@ public class PlacementScene : IScene
         {
             UpdateShipSelection();
             HandlePlacement();
+        }
+        else
+        {
+            btnPlay.Enabled = true;
+        }
+
+        btnPlay.Update();
+        if (btnPlay.IsClicked && btnPlay.Enabled)
+        {
+            sceneManager.ChangeScene(new GameScene(graphicsDevice, sceneManager));
         }
     }
 
@@ -244,7 +278,7 @@ public class PlacementScene : IScene
         if (TryGetBoardCell(out int row, out int col))
             player.Board.SetCursor(row, col);
 
-        if (InputManager.IsRightPressed)
+        if (InputManager.IsRightPressed || InputManager.IsKeyPressed(Keys.R))
             current.Rotate();
 
         if (InputManager.IsLeftClicked)
@@ -266,6 +300,10 @@ public class PlacementScene : IScene
                     selectedShipIndex = Math.Clamp(selectedShipIndex, 0, pendingShips.Count - 1);
                     pendingShips[selectedShipIndex].IsSelected = true;
                     RefreshShipList();
+                }
+                else
+                {
+                    sceneManager.GameState.Cpu.Setup(cpuShips);
                 }
             }
         }
