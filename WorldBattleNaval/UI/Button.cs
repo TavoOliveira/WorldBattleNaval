@@ -26,6 +26,14 @@ public class Button : UIElement
 
     public void Update()
     {
+        if (!Enabled || !Visible)
+        {
+            IsHovered = false;
+            IsPressed = false;
+            IsClicked = false;
+            return;
+        }
+
         IsHovered = bounds.Contains(InputManager.MousePosition);
         IsPressed = IsHovered && InputManager.IsLeftDown;
         IsClicked = IsHovered && InputManager.IsLeftClicked;
@@ -33,12 +41,16 @@ public class Button : UIElement
 
     public override int Draw(UIContext ctx)
     {
+        if (!Visible) return 0;
+
         bounds = new Rectangle(X + ctx.OffsetX, Y + ctx.OffsetY, Width, Height);
 
+        var color = Enabled ? Color.White : Color.Gray;
+
         if (texturePressed != null && IsPressed)
-            ctx.SpriteBatch.Draw(texturePressed, bounds, Color.White);
+            ctx.SpriteBatch.Draw(texturePressed, bounds, color);
         else
-            ctx.SpriteBatch.Draw(texture, bounds, Color.White);
+            ctx.SpriteBatch.Draw(texture, bounds, color);
 
         ctx.PushOffset(X, Y);
         child.Width = child.Width == 0 ? Width : child.Width;

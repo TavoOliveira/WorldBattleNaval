@@ -24,6 +24,7 @@ public class Image : UIElement
 
     public override int Draw(UIContext ctx)
     {
+        if (!Visible) return 0;
         ctx.SpriteBatch.Draw(texture, new Rectangle(X + ctx.OffsetX, Y + ctx.OffsetY, Width, Height), Color.White);
         return Height;
     }

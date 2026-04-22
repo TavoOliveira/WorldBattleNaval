@@ -21,6 +21,8 @@ public class Label : UIElement
 
     public override int Draw(UIContext ctx)
     {
+        if (!Visible) return 0;
+
         var font = Font ?? ctx.Font;
         var wrapped = WrapText(font, Text, Width);
 
@@ -36,6 +38,8 @@ public class Label : UIElement
 
     private string WrapText(SpriteFont font, string text, int width)
     {
+        if (width <= 0) return text;
+
         var result = new StringBuilder();
         var words = text.Split(' ');
         var line = "";

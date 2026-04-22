@@ -17,6 +17,8 @@ public class Panel : UIElementWithChildren
 
     public override int Draw(UIContext ctx)
     {
+        if (!Visible) return 0;
+
         ctx.FillRect(X, Y, Width, Height, Background);
 
         if (BorderColor.HasValue)
@@ -32,8 +34,11 @@ public class Panel : UIElementWithChildren
         ctx.PushOffset(X + Padding, Y + Padding);
         foreach (var child in children)
         {
-            if (child.Width == 0) child.Width = Width - Padding * 2;
-            child.Draw(ctx);   
+            if (child.Visible)
+            {
+                if (child.Width == 0) child.Width = Width - Padding * 2;
+                child.Draw(ctx);
+            }
         }
         ctx.PopOffset(X + Padding, Y + Padding);
 
