@@ -80,7 +80,7 @@ public class MainMenuScene : IScene
         quitBtn.Update();
 
         if (pvsCpuBtn.IsClicked || pvsPBtn.IsClicked)
-            sceneManager.ChangeScene(new GameScene(graphicsDevice, sceneManager));
+            sceneManager.ChangeScene(new PlacementScene(graphicsDevice, sceneManager));
     }
 
     public void Draw(GameTime gameTime)

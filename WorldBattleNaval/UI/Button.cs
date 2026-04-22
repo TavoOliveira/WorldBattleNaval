@@ -41,6 +41,7 @@ public class Button : UIElement
             ctx.SpriteBatch.Draw(texture, bounds, Color.White);
 
         ctx.PushOffset(X, Y);
+        child.Width = child.Width == 0 ? Width : child.Width;
         child.Draw(ctx);
         ctx.PopOffset(X, Y);
 

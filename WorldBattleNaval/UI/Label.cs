@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -21,7 +22,41 @@ public class Label : UIElement
     public override int Draw(UIContext ctx)
     {
         var font = Font ?? ctx.Font;
-        ctx.SpriteBatch.DrawString(font, Text, new Vector2(X + ctx.OffsetX, Y + ctx.OffsetY), Color);
+        var wrapped = WrapText(font, Text, Width);
+
+        ctx.SpriteBatch.DrawString(
+            font, 
+            wrapped, 
+            new Vector2(X + ctx.OffsetX, Y + ctx.OffsetY),
+            Color
+        );
+
         return (int)font.MeasureString(Text).Y;
+    }
+
+    private string WrapText(SpriteFont font, string text, int width)
+    {
+        var result = new StringBuilder();
+        var words = text.Split(' ');
+        var line = "";
+
+        foreach (var word in words)
+        {
+            var testLine = line.Length == 0 ? word : line + " " + word;
+            var size = font.MeasureString(testLine);
+
+            if (size.X > width)
+            {
+                result.Append(line + "\n");
+                line = word;
+            }
+            else
+            {
+                line = testLine;
+            }
+        }
+
+        result.Append(line);
+        return result.ToString();
     }
 }
