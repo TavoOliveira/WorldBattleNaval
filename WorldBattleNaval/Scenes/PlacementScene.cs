@@ -21,10 +21,8 @@ public class PlacementScene : IScene
     private List<Ship> cpuShips;
     private int selectedShipIndex;
 
-    private Texture2D texSubmarine;
     private Texture2D texIconSize;
     private Texture2D texIconSelection;
-    private Model submarineModel;
 
     private Panel headerPanel;
     private Panel lateralPanel;
@@ -43,10 +41,8 @@ public class PlacementScene : IScene
         sceneContent = new ContentManager(services) { RootDirectory = "Content" };
         camera = new Camera();
 
-        texSubmarine = sceneContent.Load<Texture2D>("images/screenshot_submarine");
         texIconSize = sceneContent.Load<Texture2D>("images/icon_size_ship");
         texIconSelection = sceneContent.Load<Texture2D>("images/icon_selection");
-        submarineModel = sceneContent.Load<Model>("models/Submarine");
 
         InitializeShips();
         InitializeUI();
@@ -56,18 +52,34 @@ public class PlacementScene : IScene
 
     private void InitializeShips()
     {
+        var carrierModel = sceneContent.Load<Model>("models/aircraft_carrier");
+        var battleshipModel = sceneContent.Load<Model>("models/battleship");
+        var submarineModel = sceneContent.Load<Model>("models/Submarine");
+        var cruiserModel = sceneContent.Load<Model>("models/cruiser");
+        var destroyerModel = sceneContent.Load<Model>("models/destroyer");
+
+        var carrierTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_aircraft_carrier");
+        var battleshipTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_battleship");
+        var submarineTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_submarine");
+        var cruiserTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_cruiser");
+        var destroyerTex = sceneContent.Load<Texture2D>("images/screenshots/screenshot_destroyer");
+
         pendingShips = [
-            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3), IsSelected = true },
-            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3) },
-            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3) },
-            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3) }
+            new RadioShipModel { Ship = new Ship("Porta-aviões", carrierModel, 5), Screenshot = carrierTex, IsSelected = true },
+            new RadioShipModel { Ship = new Ship("Encouraçado", battleshipModel, 4), Screenshot = battleshipTex },
+            new RadioShipModel { Ship = new Ship("Submarino", submarineModel, 3), Screenshot = submarineTex },
+            new RadioShipModel { Ship = new Ship("Cruzador", cruiserModel, 3), Screenshot = cruiserTex },
+            new RadioShipModel { Ship = new Ship("Destroier", destroyerModel, 2), Screenshot = destroyerTex }
         ];
 
         selectedShipIndex = 0;
 
         cpuShips = [
-            new Ship("Submarino", submarineModel, 3), new Ship("Submarino", submarineModel, 3),
-            new Ship("Submarino", submarineModel, 3), new Ship("Submarino", submarineModel, 3)
+            new Ship("Porta-aviões", carrierModel, 5),
+            new Ship("Encouraçado", battleshipModel, 4),
+            new Ship("Submarino", submarineModel, 3),
+            new Ship("Cruzador", cruiserModel, 3),
+            new Ship("Destroier", destroyerModel, 2)
         ];
     }
 
@@ -108,11 +120,15 @@ public class PlacementScene : IScene
     {
         shipListStack.ClearChildren();
         foreach (var radioShip in pendingShips)
-            shipListStack.AddChild(CreateShipItem(radioShip.Ship.Name, radioShip.IsSelected));
+            shipListStack.AddChild(CreateShipItem(radioShip));
     }
 
-    private UIElement CreateShipItem(string name, bool isSelected)
+    private UIElement CreateShipItem(RadioShipModel radioShip)
     {
+        var name = radioShip.Ship.Name;
+        var isSelected = radioShip.IsSelected;
+        var size = radioShip.Ship.Size;
+        var screenshot = radioShip.Screenshot;
 
         var panel = new Panel(0, 0, 0, 70)
         {
@@ -126,12 +142,12 @@ public class PlacementScene : IScene
         var iconContentStack = new StackPanel(0, 0, 0) { Spacing = 10, IsVertical = false };
 
         iconContentStack.AddChild(new Image(texIconSize, 0, 0, 24));
-        iconContentStack.AddChild(new Label("3 espaços", 0, 0, 0) { Font = sceneManager.Resources.TinyFont });
+        iconContentStack.AddChild(new Label($"{size} espaços", 0, 0, 0) { Font = sceneManager.Resources.TinyFont });
 
         contentLeftStack.AddChild(new Label(name, 0, 0, 0) { Font = sceneManager.Resources.SmallFont });
         contentLeftStack.AddChild(iconContentStack);
         contentStack.AddChild(contentLeftStack);
-        contentStack.AddChild(new Image(texSubmarine, 50, 5, 100, 50));
+        contentStack.AddChild(new Image(screenshot, 50, 5, 100, 50));
 
         panel.AddChild(contentStack);
         if (isSelected) panel.AddChild(new Image(texIconSelection, 240, 0, 24));
@@ -143,7 +159,6 @@ public class PlacementScene : IScene
         sceneContent?.Unload();
         sceneContent?.Dispose();
         sceneContent = null;
-        texSubmarine = null;
         texIconSize = null;
         texIconSelection = null;
         headerPanel = null;
