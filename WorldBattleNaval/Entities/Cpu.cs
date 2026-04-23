@@ -16,13 +16,13 @@ public class Cpu
     private readonly bool[,] tried = new bool[Board.Size, Board.Size];
     private readonly List<(int r, int c)> currentHits = [];
     private readonly Queue<(int r, int c)> candidates = new();
-    private readonly Random rng;
+    private readonly Random rand;
 
     public Cpu() : this(Random.Shared) { }
 
-    public Cpu(Random rng)
+    public Cpu(Random rand)
     {
-        this.rng = rng;
+        this.rand = rand;
     }
 
     public void Setup(List<Ship> ships)
@@ -147,6 +147,6 @@ public class Cpu
         }
 
         var list = parity.Count > 0 ? parity : other;
-        return list[rng.Next(list.Count)];
+        return list[rand.Next(list.Count)];
     }
 }
