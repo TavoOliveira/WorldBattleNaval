@@ -43,8 +43,8 @@ public class MainMenuScene : IScene
 
         pvsCpuBtn = CreateMenuButton("Player vs CPU", res);
 
-        pvsPBtn = CreateMenuButton("Player vs Player", res);
-        settingsBtn = CreateMenuButton("Configurações", res);
+        //pvsPBtn = CreateMenuButton("Player vs Player", res);
+        //settingsBtn = CreateMenuButton("Configurações", res);
         quitBtn = CreateMenuButton("Sair", res);
 
         var menuX = 100;
@@ -52,8 +52,8 @@ public class MainMenuScene : IScene
 
         menuStack = new StackPanel(menuX, menuY, 0) { Spacing = 10 };
         menuStack.AddChild(pvsCpuBtn);
-        menuStack.AddChild(pvsPBtn);
-        menuStack.AddChild(settingsBtn);
+        //menuStack.AddChild(pvsPBtn);
+        //menuStack.AddChild(settingsBtn);
         menuStack.AddChild(quitBtn);
 
         IsReady = true;
@@ -67,8 +67,8 @@ public class MainMenuScene : IScene
         logoImg = null;
         menuStack = null;
         pvsCpuBtn = null;
-        pvsPBtn = null;
-        settingsBtn = null;
+        //pvsPBtn = null;
+        //settingsBtn = null;
         quitBtn = null;
         IsReady = false;
     }
@@ -76,12 +76,15 @@ public class MainMenuScene : IScene
     public void Update(GameTime gameTime)
     {
         pvsCpuBtn.Update();
-        pvsPBtn.Update();
-        settingsBtn.Update();
+        //pvsPBtn.Update();
+        //settingsBtn.Update();
         quitBtn.Update();
 
-        if (pvsCpuBtn.IsClicked || pvsPBtn.IsClicked)
+        if (pvsCpuBtn.IsClicked)
+        {
+            sceneManager.GameState.Reset();
             sceneManager.ChangeScene(new PlacementScene(graphicsDevice, sceneManager));
+        }
 
         if (quitBtn.IsClicked)
             sceneManager.QuitGame();

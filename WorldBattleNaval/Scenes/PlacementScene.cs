@@ -44,6 +44,7 @@ public class PlacementScene : IScene
 
     public void LoadContent(IServiceProvider services)
     {
+        sceneManager.GameState.Reset();
         sceneContent = new ContentManager(services) { RootDirectory = "Content" };
         camera = new Camera();
 
