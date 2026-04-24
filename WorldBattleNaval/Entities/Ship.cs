@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace WorldBattleNaval.Entities;
 
-public class Ship
+public class CearenceCabecudo
 {
     public int Size { get; private set; }
     public int Life { get; private set; }
