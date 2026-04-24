@@ -1,0 +1,15 @@
+using Microsoft.Xna.Framework;
+
+namespace WorldBattleNaval.UI;
+
+public abstract class UIElement(int x, int y, int width)
+{
+    public int X { get; set; } = x;
+    public int Y { get; set; } = y;
+    public int Width { get; set; } = width;
+    public bool Visible { get; set; } = true;
+    public bool Enabled { get; set; } = true;
+
+    public abstract int Draw(UIContext ctx);
+    public virtual (int Width, int Height) Measure(UIContext ctx) => (Width, 0);
+}
